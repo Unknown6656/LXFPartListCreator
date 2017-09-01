@@ -55,12 +55,12 @@ namespace LXFPartListCreator
         public LXFMLMeta[] Meta { set; get; }
         [XmlArray(Form = Unqualified), XmlArrayItem("Camera", typeof(Camera), IsNullable = false)]
         public Camera[] Cameras { set; get; }
-        [XmlElement("Bricks", Form =Unqualified)]
+        [XmlElement("Bricks", Form = Unqualified)]
         public LXFMLBricks[] Bricks { set; get; }
         [XmlArray(Form = Unqualified), XmlArrayItem("RigidSystem", typeof(LXFMLRigidSystemsRigidSystem), Form = Unqualified, IsNullable = false)]
         public LXFMLRigidSystemsRigidSystem[] RigidSystems { set; get; }
-        [XmlElement("GroupSystems", Form = Unqualified)]
-        public LXFMLGroupSystems[] GroupSystems { set; get; }
+        [XmlArray(Form = Unqualified), XmlArrayItem("GroupSystem", typeof(LXFMLGroupSystemsGroupSystemGroup[]), Form = Unqualified, IsNullable = false), XmlArrayItem("Group", typeof(LXFMLGroupSystemsGroupSystemGroup), Form = Unqualified, IsNullable = false, NestingLevel = 1)]
+        public LXFMLGroupSystemsGroupSystemGroup[][] GroupSystems { set; get; }
         [XmlArray(Form = Unqualified), XmlArrayItem("BuildingInstruction", typeof(LXFMLBuildingInstructionsBuildingInstruction), Form = Unqualified, IsNullable = false)]
         public LXFMLBuildingInstructionsBuildingInstruction[] BuildingInstructions { set; get; }
         [XmlAttribute]
@@ -192,12 +192,16 @@ namespace LXFPartListCreator
         [XmlAttribute]
         public string t { set; get; }
     }
-
+    
     [GeneratedCode("xsd", "4.6.1055.0"), Serializable, DebuggerStepThrough, DesignerCategory("code"), XmlType(AnonymousType = true)]
-    public partial class LXFMLGroupSystems
+    public partial class LXFMLGroupSystemsGroupSystemGroup
     {
-        [XmlElement(Form = Unqualified)]
-        public string GroupSystem { set; get; }
+        [XmlAttribute]
+        public string transformation { set; get; }
+        [XmlAttribute]
+        public string pivot { set; get; }
+        [XmlAttribute]
+        public string partRefs { set; get; }
     }
 
     [GeneratedCode("xsd", "4.6.1055.0"), Serializable, DebuggerStepThrough, DesignerCategory("code"), XmlType(AnonymousType = true)]

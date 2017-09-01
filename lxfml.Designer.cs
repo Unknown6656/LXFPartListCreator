@@ -24,12 +24,6 @@ namespace LXFPartListCreator {
     [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.DataSet")]
     public partial class NewDataSet : global::System.Data.DataSet {
         
-        private CameraDataTable tableCamera;
-        
-        private StepDataTable tableStep;
-        
-        private PartRefDataTable tablePartRef;
-        
         private LXFMLDataTable tableLXFML;
         
         private MetaDataTable tableMeta;
@@ -41,6 +35,8 @@ namespace LXFPartListCreator {
         private BrickSetDataTable tableBrickSet;
         
         private CamerasDataTable tableCameras;
+        
+        private CameraDataTable tableCamera;
         
         private BricksDataTable tableBricks;
         
@@ -62,21 +58,9 @@ namespace LXFPartListCreator {
         
         private GroupSystemsDataTable tableGroupSystems;
         
-        private BuildingInstructionsDataTable tableBuildingInstructions;
+        private GroupSystemDataTable tableGroupSystem;
         
-        private BuildingInstructionDataTable tableBuildingInstruction;
-        
-        private global::System.Data.DataRelation relationStep_Camera;
-        
-        private global::System.Data.DataRelation relationCameras_Camera;
-        
-        private global::System.Data.DataRelation relationBuildingInstruction_Camera;
-        
-        private global::System.Data.DataRelation relationStep_Step;
-        
-        private global::System.Data.DataRelation relationBuildingInstruction_Step;
-        
-        private global::System.Data.DataRelation relationStep_PartRef;
+        private GroupDataTable tableGroup;
         
         private global::System.Data.DataRelation relationLXFML_Meta;
         
@@ -87,6 +71,8 @@ namespace LXFPartListCreator {
         private global::System.Data.DataRelation relationMeta_BrickSet;
         
         private global::System.Data.DataRelation relationLXFML_Cameras;
+        
+        private global::System.Data.DataRelation relationCameras_Camera;
         
         private global::System.Data.DataRelation relationLXFML_Bricks;
         
@@ -108,9 +94,9 @@ namespace LXFPartListCreator {
         
         private global::System.Data.DataRelation relationLXFML_GroupSystems;
         
-        private global::System.Data.DataRelation relationLXFML_BuildingInstructions;
+        private global::System.Data.DataRelation relationGroupSystems_GroupSystem;
         
-        private global::System.Data.DataRelation relationBuildingInstructions_BuildingInstruction;
+        private global::System.Data.DataRelation relationGroupSystem_Group;
         
         private global::System.Data.SchemaSerializationMode _schemaSerializationMode = global::System.Data.SchemaSerializationMode.IncludeSchema;
         
@@ -140,15 +126,6 @@ namespace LXFPartListCreator {
             if ((this.DetermineSchemaSerializationMode(info, context) == global::System.Data.SchemaSerializationMode.IncludeSchema)) {
                 global::System.Data.DataSet ds = new global::System.Data.DataSet();
                 ds.ReadXmlSchema(new global::System.Xml.XmlTextReader(new global::System.IO.StringReader(strSchema)));
-                if ((ds.Tables["Camera"] != null)) {
-                    base.Tables.Add(new CameraDataTable(ds.Tables["Camera"]));
-                }
-                if ((ds.Tables["Step"] != null)) {
-                    base.Tables.Add(new StepDataTable(ds.Tables["Step"]));
-                }
-                if ((ds.Tables["PartRef"] != null)) {
-                    base.Tables.Add(new PartRefDataTable(ds.Tables["PartRef"]));
-                }
                 if ((ds.Tables["LXFML"] != null)) {
                     base.Tables.Add(new LXFMLDataTable(ds.Tables["LXFML"]));
                 }
@@ -166,6 +143,9 @@ namespace LXFPartListCreator {
                 }
                 if ((ds.Tables["Cameras"] != null)) {
                     base.Tables.Add(new CamerasDataTable(ds.Tables["Cameras"]));
+                }
+                if ((ds.Tables["Camera"] != null)) {
+                    base.Tables.Add(new CameraDataTable(ds.Tables["Camera"]));
                 }
                 if ((ds.Tables["Bricks"] != null)) {
                     base.Tables.Add(new BricksDataTable(ds.Tables["Bricks"]));
@@ -197,11 +177,11 @@ namespace LXFPartListCreator {
                 if ((ds.Tables["GroupSystems"] != null)) {
                     base.Tables.Add(new GroupSystemsDataTable(ds.Tables["GroupSystems"]));
                 }
-                if ((ds.Tables["BuildingInstructions"] != null)) {
-                    base.Tables.Add(new BuildingInstructionsDataTable(ds.Tables["BuildingInstructions"]));
+                if ((ds.Tables["GroupSystem"] != null)) {
+                    base.Tables.Add(new GroupSystemDataTable(ds.Tables["GroupSystem"]));
                 }
-                if ((ds.Tables["BuildingInstruction"] != null)) {
-                    base.Tables.Add(new BuildingInstructionDataTable(ds.Tables["BuildingInstruction"]));
+                if ((ds.Tables["Group"] != null)) {
+                    base.Tables.Add(new GroupDataTable(ds.Tables["Group"]));
                 }
                 this.DataSetName = ds.DataSetName;
                 this.Prefix = ds.Prefix;
@@ -219,36 +199,6 @@ namespace LXFPartListCreator {
             global::System.ComponentModel.CollectionChangeEventHandler schemaChangedHandler = new global::System.ComponentModel.CollectionChangeEventHandler(this.SchemaChanged);
             base.Tables.CollectionChanged += schemaChangedHandler;
             this.Relations.CollectionChanged += schemaChangedHandler;
-        }
-        
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        [global::System.ComponentModel.Browsable(false)]
-        [global::System.ComponentModel.DesignerSerializationVisibility(global::System.ComponentModel.DesignerSerializationVisibility.Content)]
-        public CameraDataTable Camera {
-            get {
-                return this.tableCamera;
-            }
-        }
-        
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        [global::System.ComponentModel.Browsable(false)]
-        [global::System.ComponentModel.DesignerSerializationVisibility(global::System.ComponentModel.DesignerSerializationVisibility.Content)]
-        public StepDataTable Step {
-            get {
-                return this.tableStep;
-            }
-        }
-        
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        [global::System.ComponentModel.Browsable(false)]
-        [global::System.ComponentModel.DesignerSerializationVisibility(global::System.ComponentModel.DesignerSerializationVisibility.Content)]
-        public PartRefDataTable PartRef {
-            get {
-                return this.tablePartRef;
-            }
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -308,6 +258,16 @@ namespace LXFPartListCreator {
         public CamerasDataTable Cameras {
             get {
                 return this.tableCameras;
+            }
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+        [global::System.ComponentModel.Browsable(false)]
+        [global::System.ComponentModel.DesignerSerializationVisibility(global::System.ComponentModel.DesignerSerializationVisibility.Content)]
+        public CameraDataTable Camera {
+            get {
+                return this.tableCamera;
             }
         }
         
@@ -415,9 +375,9 @@ namespace LXFPartListCreator {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         [global::System.ComponentModel.Browsable(false)]
         [global::System.ComponentModel.DesignerSerializationVisibility(global::System.ComponentModel.DesignerSerializationVisibility.Content)]
-        public BuildingInstructionsDataTable BuildingInstructions {
+        public GroupSystemDataTable GroupSystem {
             get {
-                return this.tableBuildingInstructions;
+                return this.tableGroupSystem;
             }
         }
         
@@ -425,9 +385,9 @@ namespace LXFPartListCreator {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         [global::System.ComponentModel.Browsable(false)]
         [global::System.ComponentModel.DesignerSerializationVisibility(global::System.ComponentModel.DesignerSerializationVisibility.Content)]
-        public BuildingInstructionDataTable BuildingInstruction {
+        public GroupDataTable Group {
             get {
-                return this.tableBuildingInstruction;
+                return this.tableGroup;
             }
         }
         
@@ -498,15 +458,6 @@ namespace LXFPartListCreator {
                 this.Reset();
                 global::System.Data.DataSet ds = new global::System.Data.DataSet();
                 ds.ReadXml(reader);
-                if ((ds.Tables["Camera"] != null)) {
-                    base.Tables.Add(new CameraDataTable(ds.Tables["Camera"]));
-                }
-                if ((ds.Tables["Step"] != null)) {
-                    base.Tables.Add(new StepDataTable(ds.Tables["Step"]));
-                }
-                if ((ds.Tables["PartRef"] != null)) {
-                    base.Tables.Add(new PartRefDataTable(ds.Tables["PartRef"]));
-                }
                 if ((ds.Tables["LXFML"] != null)) {
                     base.Tables.Add(new LXFMLDataTable(ds.Tables["LXFML"]));
                 }
@@ -524,6 +475,9 @@ namespace LXFPartListCreator {
                 }
                 if ((ds.Tables["Cameras"] != null)) {
                     base.Tables.Add(new CamerasDataTable(ds.Tables["Cameras"]));
+                }
+                if ((ds.Tables["Camera"] != null)) {
+                    base.Tables.Add(new CameraDataTable(ds.Tables["Camera"]));
                 }
                 if ((ds.Tables["Bricks"] != null)) {
                     base.Tables.Add(new BricksDataTable(ds.Tables["Bricks"]));
@@ -555,11 +509,11 @@ namespace LXFPartListCreator {
                 if ((ds.Tables["GroupSystems"] != null)) {
                     base.Tables.Add(new GroupSystemsDataTable(ds.Tables["GroupSystems"]));
                 }
-                if ((ds.Tables["BuildingInstructions"] != null)) {
-                    base.Tables.Add(new BuildingInstructionsDataTable(ds.Tables["BuildingInstructions"]));
+                if ((ds.Tables["GroupSystem"] != null)) {
+                    base.Tables.Add(new GroupSystemDataTable(ds.Tables["GroupSystem"]));
                 }
-                if ((ds.Tables["BuildingInstruction"] != null)) {
-                    base.Tables.Add(new BuildingInstructionDataTable(ds.Tables["BuildingInstruction"]));
+                if ((ds.Tables["Group"] != null)) {
+                    base.Tables.Add(new GroupDataTable(ds.Tables["Group"]));
                 }
                 this.DataSetName = ds.DataSetName;
                 this.Prefix = ds.Prefix;
@@ -594,24 +548,6 @@ namespace LXFPartListCreator {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         internal void InitVars(bool initTable) {
-            this.tableCamera = ((CameraDataTable)(base.Tables["Camera"]));
-            if ((initTable == true)) {
-                if ((this.tableCamera != null)) {
-                    this.tableCamera.InitVars();
-                }
-            }
-            this.tableStep = ((StepDataTable)(base.Tables["Step"]));
-            if ((initTable == true)) {
-                if ((this.tableStep != null)) {
-                    this.tableStep.InitVars();
-                }
-            }
-            this.tablePartRef = ((PartRefDataTable)(base.Tables["PartRef"]));
-            if ((initTable == true)) {
-                if ((this.tablePartRef != null)) {
-                    this.tablePartRef.InitVars();
-                }
-            }
             this.tableLXFML = ((LXFMLDataTable)(base.Tables["LXFML"]));
             if ((initTable == true)) {
                 if ((this.tableLXFML != null)) {
@@ -646,6 +582,12 @@ namespace LXFPartListCreator {
             if ((initTable == true)) {
                 if ((this.tableCameras != null)) {
                     this.tableCameras.InitVars();
+                }
+            }
+            this.tableCamera = ((CameraDataTable)(base.Tables["Camera"]));
+            if ((initTable == true)) {
+                if ((this.tableCamera != null)) {
+                    this.tableCamera.InitVars();
                 }
             }
             this.tableBricks = ((BricksDataTable)(base.Tables["Bricks"]));
@@ -708,29 +650,24 @@ namespace LXFPartListCreator {
                     this.tableGroupSystems.InitVars();
                 }
             }
-            this.tableBuildingInstructions = ((BuildingInstructionsDataTable)(base.Tables["BuildingInstructions"]));
+            this.tableGroupSystem = ((GroupSystemDataTable)(base.Tables["GroupSystem"]));
             if ((initTable == true)) {
-                if ((this.tableBuildingInstructions != null)) {
-                    this.tableBuildingInstructions.InitVars();
+                if ((this.tableGroupSystem != null)) {
+                    this.tableGroupSystem.InitVars();
                 }
             }
-            this.tableBuildingInstruction = ((BuildingInstructionDataTable)(base.Tables["BuildingInstruction"]));
+            this.tableGroup = ((GroupDataTable)(base.Tables["Group"]));
             if ((initTable == true)) {
-                if ((this.tableBuildingInstruction != null)) {
-                    this.tableBuildingInstruction.InitVars();
+                if ((this.tableGroup != null)) {
+                    this.tableGroup.InitVars();
                 }
             }
-            this.relationStep_Camera = this.Relations["Step_Camera"];
-            this.relationCameras_Camera = this.Relations["Cameras_Camera"];
-            this.relationBuildingInstruction_Camera = this.Relations["BuildingInstruction_Camera"];
-            this.relationStep_Step = this.Relations["Step_Step"];
-            this.relationBuildingInstruction_Step = this.Relations["BuildingInstruction_Step"];
-            this.relationStep_PartRef = this.Relations["Step_PartRef"];
             this.relationLXFML_Meta = this.Relations["LXFML_Meta"];
             this.relationMeta_Application = this.Relations["Meta_Application"];
             this.relationMeta_Brand = this.Relations["Meta_Brand"];
             this.relationMeta_BrickSet = this.Relations["Meta_BrickSet"];
             this.relationLXFML_Cameras = this.Relations["LXFML_Cameras"];
+            this.relationCameras_Camera = this.Relations["Cameras_Camera"];
             this.relationLXFML_Bricks = this.Relations["LXFML_Bricks"];
             this.relationBricks_Brick = this.Relations["Bricks_Brick"];
             this.relationBrick_Part = this.Relations["Brick_Part"];
@@ -741,8 +678,8 @@ namespace LXFPartListCreator {
             this.relationRigidSystem_Joint = this.Relations["RigidSystem_Joint"];
             this.relationJoint_RigidRef = this.Relations["Joint_RigidRef"];
             this.relationLXFML_GroupSystems = this.Relations["LXFML_GroupSystems"];
-            this.relationLXFML_BuildingInstructions = this.Relations["LXFML_BuildingInstructions"];
-            this.relationBuildingInstructions_BuildingInstruction = this.Relations["BuildingInstructions_BuildingInstruction"];
+            this.relationGroupSystems_GroupSystem = this.Relations["GroupSystems_GroupSystem"];
+            this.relationGroupSystem_Group = this.Relations["GroupSystem_Group"];
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -752,12 +689,6 @@ namespace LXFPartListCreator {
             this.Prefix = "";
             this.EnforceConstraints = true;
             this.SchemaSerializationMode = global::System.Data.SchemaSerializationMode.IncludeSchema;
-            this.tableCamera = new CameraDataTable();
-            base.Tables.Add(this.tableCamera);
-            this.tableStep = new StepDataTable();
-            base.Tables.Add(this.tableStep);
-            this.tablePartRef = new PartRefDataTable();
-            base.Tables.Add(this.tablePartRef);
             this.tableLXFML = new LXFMLDataTable();
             base.Tables.Add(this.tableLXFML);
             this.tableMeta = new MetaDataTable();
@@ -770,6 +701,8 @@ namespace LXFPartListCreator {
             base.Tables.Add(this.tableBrickSet);
             this.tableCameras = new CamerasDataTable();
             base.Tables.Add(this.tableCameras);
+            this.tableCamera = new CameraDataTable();
+            base.Tables.Add(this.tableCamera);
             this.tableBricks = new BricksDataTable();
             base.Tables.Add(this.tableBricks);
             this.tableBrick = new BrickDataTable();
@@ -790,53 +723,11 @@ namespace LXFPartListCreator {
             base.Tables.Add(this.tableRigidRef);
             this.tableGroupSystems = new GroupSystemsDataTable();
             base.Tables.Add(this.tableGroupSystems);
-            this.tableBuildingInstructions = new BuildingInstructionsDataTable();
-            base.Tables.Add(this.tableBuildingInstructions);
-            this.tableBuildingInstruction = new BuildingInstructionDataTable();
-            base.Tables.Add(this.tableBuildingInstruction);
+            this.tableGroupSystem = new GroupSystemDataTable();
+            base.Tables.Add(this.tableGroupSystem);
+            this.tableGroup = new GroupDataTable();
+            base.Tables.Add(this.tableGroup);
             global::System.Data.ForeignKeyConstraint fkc;
-            fkc = new global::System.Data.ForeignKeyConstraint("Step_Camera", new global::System.Data.DataColumn[] {
-                        this.tableStep.Step_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableCamera.Step_IdColumn});
-            this.tableCamera.Constraints.Add(fkc);
-            fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
-            fkc.DeleteRule = global::System.Data.Rule.Cascade;
-            fkc.UpdateRule = global::System.Data.Rule.Cascade;
-            fkc = new global::System.Data.ForeignKeyConstraint("Cameras_Camera", new global::System.Data.DataColumn[] {
-                        this.tableCameras.Cameras_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableCamera.Cameras_IdColumn});
-            this.tableCamera.Constraints.Add(fkc);
-            fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
-            fkc.DeleteRule = global::System.Data.Rule.Cascade;
-            fkc.UpdateRule = global::System.Data.Rule.Cascade;
-            fkc = new global::System.Data.ForeignKeyConstraint("BuildingInstruction_Camera", new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstruction.BuildingInstruction_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableCamera.BuildingInstruction_IdColumn});
-            this.tableCamera.Constraints.Add(fkc);
-            fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
-            fkc.DeleteRule = global::System.Data.Rule.Cascade;
-            fkc.UpdateRule = global::System.Data.Rule.Cascade;
-            fkc = new global::System.Data.ForeignKeyConstraint("Step_Step", new global::System.Data.DataColumn[] {
-                        this.tableStep.Step_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableStep.Step_Id_0Column});
-            this.tableStep.Constraints.Add(fkc);
-            fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
-            fkc.DeleteRule = global::System.Data.Rule.Cascade;
-            fkc.UpdateRule = global::System.Data.Rule.Cascade;
-            fkc = new global::System.Data.ForeignKeyConstraint("BuildingInstruction_Step", new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstruction.BuildingInstruction_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableStep.BuildingInstruction_IdColumn});
-            this.tableStep.Constraints.Add(fkc);
-            fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
-            fkc.DeleteRule = global::System.Data.Rule.Cascade;
-            fkc.UpdateRule = global::System.Data.Rule.Cascade;
-            fkc = new global::System.Data.ForeignKeyConstraint("Step_PartRef", new global::System.Data.DataColumn[] {
-                        this.tableStep.Step_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tablePartRef.Step_IdColumn});
-            this.tablePartRef.Constraints.Add(fkc);
-            fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
-            fkc.DeleteRule = global::System.Data.Rule.Cascade;
-            fkc.UpdateRule = global::System.Data.Rule.Cascade;
             fkc = new global::System.Data.ForeignKeyConstraint("LXFML_Meta", new global::System.Data.DataColumn[] {
                         this.tableLXFML.LXFML_IdColumn}, new global::System.Data.DataColumn[] {
                         this.tableMeta.LXFML_IdColumn});
@@ -869,6 +760,13 @@ namespace LXFPartListCreator {
                         this.tableLXFML.LXFML_IdColumn}, new global::System.Data.DataColumn[] {
                         this.tableCameras.LXFML_IdColumn});
             this.tableCameras.Constraints.Add(fkc);
+            fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
+            fkc.DeleteRule = global::System.Data.Rule.Cascade;
+            fkc.UpdateRule = global::System.Data.Rule.Cascade;
+            fkc = new global::System.Data.ForeignKeyConstraint("Cameras_Camera", new global::System.Data.DataColumn[] {
+                        this.tableCameras.Cameras_IdColumn}, new global::System.Data.DataColumn[] {
+                        this.tableCamera.Cameras_IdColumn});
+            this.tableCamera.Constraints.Add(fkc);
             fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
             fkc.DeleteRule = global::System.Data.Rule.Cascade;
             fkc.UpdateRule = global::System.Data.Rule.Cascade;
@@ -942,50 +840,20 @@ namespace LXFPartListCreator {
             fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
             fkc.DeleteRule = global::System.Data.Rule.Cascade;
             fkc.UpdateRule = global::System.Data.Rule.Cascade;
-            fkc = new global::System.Data.ForeignKeyConstraint("LXFML_BuildingInstructions", new global::System.Data.DataColumn[] {
-                        this.tableLXFML.LXFML_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstructions.LXFML_IdColumn});
-            this.tableBuildingInstructions.Constraints.Add(fkc);
+            fkc = new global::System.Data.ForeignKeyConstraint("GroupSystems_GroupSystem", new global::System.Data.DataColumn[] {
+                        this.tableGroupSystems.GroupSystems_IdColumn}, new global::System.Data.DataColumn[] {
+                        this.tableGroupSystem.GroupSystems_IdColumn});
+            this.tableGroupSystem.Constraints.Add(fkc);
             fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
             fkc.DeleteRule = global::System.Data.Rule.Cascade;
             fkc.UpdateRule = global::System.Data.Rule.Cascade;
-            fkc = new global::System.Data.ForeignKeyConstraint("BuildingInstructions_BuildingInstruction", new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstructions.BuildingInstructions_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstruction.BuildingInstructions_IdColumn});
-            this.tableBuildingInstruction.Constraints.Add(fkc);
+            fkc = new global::System.Data.ForeignKeyConstraint("GroupSystem_Group", new global::System.Data.DataColumn[] {
+                        this.tableGroupSystem.GroupSystem_IdColumn}, new global::System.Data.DataColumn[] {
+                        this.tableGroup.GroupSystem_IdColumn});
+            this.tableGroup.Constraints.Add(fkc);
             fkc.AcceptRejectRule = global::System.Data.AcceptRejectRule.None;
             fkc.DeleteRule = global::System.Data.Rule.Cascade;
             fkc.UpdateRule = global::System.Data.Rule.Cascade;
-            this.relationStep_Camera = new global::System.Data.DataRelation("Step_Camera", new global::System.Data.DataColumn[] {
-                        this.tableStep.Step_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableCamera.Step_IdColumn}, false);
-            this.relationStep_Camera.Nested = true;
-            this.Relations.Add(this.relationStep_Camera);
-            this.relationCameras_Camera = new global::System.Data.DataRelation("Cameras_Camera", new global::System.Data.DataColumn[] {
-                        this.tableCameras.Cameras_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableCamera.Cameras_IdColumn}, false);
-            this.relationCameras_Camera.Nested = true;
-            this.Relations.Add(this.relationCameras_Camera);
-            this.relationBuildingInstruction_Camera = new global::System.Data.DataRelation("BuildingInstruction_Camera", new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstruction.BuildingInstruction_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableCamera.BuildingInstruction_IdColumn}, false);
-            this.relationBuildingInstruction_Camera.Nested = true;
-            this.Relations.Add(this.relationBuildingInstruction_Camera);
-            this.relationStep_Step = new global::System.Data.DataRelation("Step_Step", new global::System.Data.DataColumn[] {
-                        this.tableStep.Step_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableStep.Step_Id_0Column}, false);
-            this.relationStep_Step.Nested = true;
-            this.Relations.Add(this.relationStep_Step);
-            this.relationBuildingInstruction_Step = new global::System.Data.DataRelation("BuildingInstruction_Step", new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstruction.BuildingInstruction_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableStep.BuildingInstruction_IdColumn}, false);
-            this.relationBuildingInstruction_Step.Nested = true;
-            this.Relations.Add(this.relationBuildingInstruction_Step);
-            this.relationStep_PartRef = new global::System.Data.DataRelation("Step_PartRef", new global::System.Data.DataColumn[] {
-                        this.tableStep.Step_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tablePartRef.Step_IdColumn}, false);
-            this.relationStep_PartRef.Nested = true;
-            this.Relations.Add(this.relationStep_PartRef);
             this.relationLXFML_Meta = new global::System.Data.DataRelation("LXFML_Meta", new global::System.Data.DataColumn[] {
                         this.tableLXFML.LXFML_IdColumn}, new global::System.Data.DataColumn[] {
                         this.tableMeta.LXFML_IdColumn}, false);
@@ -1011,6 +879,11 @@ namespace LXFPartListCreator {
                         this.tableCameras.LXFML_IdColumn}, false);
             this.relationLXFML_Cameras.Nested = true;
             this.Relations.Add(this.relationLXFML_Cameras);
+            this.relationCameras_Camera = new global::System.Data.DataRelation("Cameras_Camera", new global::System.Data.DataColumn[] {
+                        this.tableCameras.Cameras_IdColumn}, new global::System.Data.DataColumn[] {
+                        this.tableCamera.Cameras_IdColumn}, false);
+            this.relationCameras_Camera.Nested = true;
+            this.Relations.Add(this.relationCameras_Camera);
             this.relationLXFML_Bricks = new global::System.Data.DataRelation("LXFML_Bricks", new global::System.Data.DataColumn[] {
                         this.tableLXFML.LXFML_IdColumn}, new global::System.Data.DataColumn[] {
                         this.tableBricks.LXFML_IdColumn}, false);
@@ -1061,34 +934,16 @@ namespace LXFPartListCreator {
                         this.tableGroupSystems.LXFML_IdColumn}, false);
             this.relationLXFML_GroupSystems.Nested = true;
             this.Relations.Add(this.relationLXFML_GroupSystems);
-            this.relationLXFML_BuildingInstructions = new global::System.Data.DataRelation("LXFML_BuildingInstructions", new global::System.Data.DataColumn[] {
-                        this.tableLXFML.LXFML_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstructions.LXFML_IdColumn}, false);
-            this.relationLXFML_BuildingInstructions.Nested = true;
-            this.Relations.Add(this.relationLXFML_BuildingInstructions);
-            this.relationBuildingInstructions_BuildingInstruction = new global::System.Data.DataRelation("BuildingInstructions_BuildingInstruction", new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstructions.BuildingInstructions_IdColumn}, new global::System.Data.DataColumn[] {
-                        this.tableBuildingInstruction.BuildingInstructions_IdColumn}, false);
-            this.relationBuildingInstructions_BuildingInstruction.Nested = true;
-            this.Relations.Add(this.relationBuildingInstructions_BuildingInstruction);
-        }
-        
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        private bool ShouldSerializeCamera() {
-            return false;
-        }
-        
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        private bool ShouldSerializeStep() {
-            return false;
-        }
-        
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        private bool ShouldSerializePartRef() {
-            return false;
+            this.relationGroupSystems_GroupSystem = new global::System.Data.DataRelation("GroupSystems_GroupSystem", new global::System.Data.DataColumn[] {
+                        this.tableGroupSystems.GroupSystems_IdColumn}, new global::System.Data.DataColumn[] {
+                        this.tableGroupSystem.GroupSystems_IdColumn}, false);
+            this.relationGroupSystems_GroupSystem.Nested = true;
+            this.Relations.Add(this.relationGroupSystems_GroupSystem);
+            this.relationGroupSystem_Group = new global::System.Data.DataRelation("GroupSystem_Group", new global::System.Data.DataColumn[] {
+                        this.tableGroupSystem.GroupSystem_IdColumn}, new global::System.Data.DataColumn[] {
+                        this.tableGroup.GroupSystem_IdColumn}, false);
+            this.relationGroupSystem_Group.Nested = true;
+            this.Relations.Add(this.relationGroupSystem_Group);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1124,6 +979,12 @@ namespace LXFPartListCreator {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         private bool ShouldSerializeCameras() {
+            return false;
+        }
+        
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+        private bool ShouldSerializeCamera() {
             return false;
         }
         
@@ -1189,13 +1050,13 @@ namespace LXFPartListCreator {
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        private bool ShouldSerializeBuildingInstructions() {
+        private bool ShouldSerializeGroupSystem() {
             return false;
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        private bool ShouldSerializeBuildingInstruction() {
+        private bool ShouldSerializeGroup() {
             return false;
         }
         
@@ -1255,15 +1116,6 @@ namespace LXFPartListCreator {
         }
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public delegate void CameraRowChangeEventHandler(object sender, CameraRowChangeEvent e);
-        
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public delegate void StepRowChangeEventHandler(object sender, StepRowChangeEvent e);
-        
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public delegate void PartRefRowChangeEventHandler(object sender, PartRefRowChangeEvent e);
-        
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         public delegate void LXFMLRowChangeEventHandler(object sender, LXFMLRowChangeEvent e);
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
@@ -1280,6 +1132,9 @@ namespace LXFPartListCreator {
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         public delegate void CamerasRowChangeEventHandler(object sender, CamerasRowChangeEvent e);
+        
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+        public delegate void CameraRowChangeEventHandler(object sender, CameraRowChangeEvent e);
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         public delegate void BricksRowChangeEventHandler(object sender, BricksRowChangeEvent e);
@@ -1312,935 +1167,10 @@ namespace LXFPartListCreator {
         public delegate void GroupSystemsRowChangeEventHandler(object sender, GroupSystemsRowChangeEvent e);
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public delegate void BuildingInstructionsRowChangeEventHandler(object sender, BuildingInstructionsRowChangeEvent e);
+        public delegate void GroupSystemRowChangeEventHandler(object sender, GroupSystemRowChangeEvent e);
         
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public delegate void BuildingInstructionRowChangeEventHandler(object sender, BuildingInstructionRowChangeEvent e);
-        
-        /// <summary>
-        ///Represents the strongly named DataTable class.
-        ///</summary>
-        [global::System.Serializable()]
-        [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class CameraDataTable : global::System.Data.TypedTableBase<CameraRow> {
-            
-            private global::System.Data.DataColumn columnrefID;
-            
-            private global::System.Data.DataColumn columnfieldOfView;
-            
-            private global::System.Data.DataColumn columndistance;
-            
-            private global::System.Data.DataColumn columntransformation;
-            
-            private global::System.Data.DataColumn columncameraRef;
-            
-            private global::System.Data.DataColumn columnStep_Id;
-            
-            private global::System.Data.DataColumn columnCameras_Id;
-            
-            private global::System.Data.DataColumn columnBuildingInstruction_Id;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public CameraDataTable() {
-                this.TableName = "Camera";
-                this.BeginInit();
-                this.InitClass();
-                this.EndInit();
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal CameraDataTable(global::System.Data.DataTable table) {
-                this.TableName = table.TableName;
-                if ((table.CaseSensitive != table.DataSet.CaseSensitive)) {
-                    this.CaseSensitive = table.CaseSensitive;
-                }
-                if ((table.Locale.ToString() != table.DataSet.Locale.ToString())) {
-                    this.Locale = table.Locale;
-                }
-                if ((table.Namespace != table.DataSet.Namespace)) {
-                    this.Namespace = table.Namespace;
-                }
-                this.Prefix = table.Prefix;
-                this.MinimumCapacity = table.MinimumCapacity;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected CameraDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
-                    base(info, context) {
-                this.InitVars();
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn refIDColumn {
-                get {
-                    return this.columnrefID;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn fieldOfViewColumn {
-                get {
-                    return this.columnfieldOfView;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn distanceColumn {
-                get {
-                    return this.columndistance;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn transformationColumn {
-                get {
-                    return this.columntransformation;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn cameraRefColumn {
-                get {
-                    return this.columncameraRef;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn Step_IdColumn {
-                get {
-                    return this.columnStep_Id;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn Cameras_IdColumn {
-                get {
-                    return this.columnCameras_Id;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn BuildingInstruction_IdColumn {
-                get {
-                    return this.columnBuildingInstruction_Id;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            [global::System.ComponentModel.Browsable(false)]
-            public int Count {
-                get {
-                    return this.Rows.Count;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public CameraRow this[int index] {
-                get {
-                    return ((CameraRow)(this.Rows[index]));
-                }
-            }
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event CameraRowChangeEventHandler CameraRowChanging;
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event CameraRowChangeEventHandler CameraRowChanged;
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event CameraRowChangeEventHandler CameraRowDeleting;
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event CameraRowChangeEventHandler CameraRowDeleted;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void AddCameraRow(CameraRow row) {
-                this.Rows.Add(row);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public CameraRow AddCameraRow(string refID, string fieldOfView, string distance, string transformation, string cameraRef, StepRow parentStepRowByStep_Camera, CamerasRow parentCamerasRowByCameras_Camera, BuildingInstructionRow parentBuildingInstructionRowByBuildingInstruction_Camera) {
-                CameraRow rowCameraRow = ((CameraRow)(this.NewRow()));
-                object[] columnValuesArray = new object[] {
-                        refID,
-                        fieldOfView,
-                        distance,
-                        transformation,
-                        cameraRef,
-                        null,
-                        null,
-                        null};
-                if ((parentStepRowByStep_Camera != null)) {
-                    columnValuesArray[5] = parentStepRowByStep_Camera[1];
-                }
-                if ((parentCamerasRowByCameras_Camera != null)) {
-                    columnValuesArray[6] = parentCamerasRowByCameras_Camera[0];
-                }
-                if ((parentBuildingInstructionRowByBuildingInstruction_Camera != null)) {
-                    columnValuesArray[7] = parentBuildingInstructionRowByBuildingInstruction_Camera[1];
-                }
-                rowCameraRow.ItemArray = columnValuesArray;
-                this.Rows.Add(rowCameraRow);
-                return rowCameraRow;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public override global::System.Data.DataTable Clone() {
-                CameraDataTable cln = ((CameraDataTable)(base.Clone()));
-                cln.InitVars();
-                return cln;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override global::System.Data.DataTable CreateInstance() {
-                return new CameraDataTable();
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal void InitVars() {
-                this.columnrefID = base.Columns["refID"];
-                this.columnfieldOfView = base.Columns["fieldOfView"];
-                this.columndistance = base.Columns["distance"];
-                this.columntransformation = base.Columns["transformation"];
-                this.columncameraRef = base.Columns["cameraRef"];
-                this.columnStep_Id = base.Columns["Step_Id"];
-                this.columnCameras_Id = base.Columns["Cameras_Id"];
-                this.columnBuildingInstruction_Id = base.Columns["BuildingInstruction_Id"];
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            private void InitClass() {
-                this.columnrefID = new global::System.Data.DataColumn("refID", typeof(string), null, global::System.Data.MappingType.Attribute);
-                base.Columns.Add(this.columnrefID);
-                this.columnfieldOfView = new global::System.Data.DataColumn("fieldOfView", typeof(string), null, global::System.Data.MappingType.Attribute);
-                base.Columns.Add(this.columnfieldOfView);
-                this.columndistance = new global::System.Data.DataColumn("distance", typeof(string), null, global::System.Data.MappingType.Attribute);
-                base.Columns.Add(this.columndistance);
-                this.columntransformation = new global::System.Data.DataColumn("transformation", typeof(string), null, global::System.Data.MappingType.Attribute);
-                base.Columns.Add(this.columntransformation);
-                this.columncameraRef = new global::System.Data.DataColumn("cameraRef", typeof(string), null, global::System.Data.MappingType.Attribute);
-                base.Columns.Add(this.columncameraRef);
-                this.columnStep_Id = new global::System.Data.DataColumn("Step_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnStep_Id);
-                this.columnCameras_Id = new global::System.Data.DataColumn("Cameras_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnCameras_Id);
-                this.columnBuildingInstruction_Id = new global::System.Data.DataColumn("BuildingInstruction_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnBuildingInstruction_Id);
-                this.columnrefID.Namespace = "";
-                this.columnfieldOfView.Namespace = "";
-                this.columndistance.Namespace = "";
-                this.columntransformation.Namespace = "";
-                this.columncameraRef.Namespace = "";
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public CameraRow NewCameraRow() {
-                return ((CameraRow)(this.NewRow()));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override global::System.Data.DataRow NewRowFromBuilder(global::System.Data.DataRowBuilder builder) {
-                return new CameraRow(builder);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override global::System.Type GetRowType() {
-                return typeof(CameraRow);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowChanged(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowChanged(e);
-                if ((this.CameraRowChanged != null)) {
-                    this.CameraRowChanged(this, new CameraRowChangeEvent(((CameraRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowChanging(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowChanging(e);
-                if ((this.CameraRowChanging != null)) {
-                    this.CameraRowChanging(this, new CameraRowChangeEvent(((CameraRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowDeleted(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowDeleted(e);
-                if ((this.CameraRowDeleted != null)) {
-                    this.CameraRowDeleted(this, new CameraRowChangeEvent(((CameraRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowDeleting(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowDeleting(e);
-                if ((this.CameraRowDeleting != null)) {
-                    this.CameraRowDeleting(this, new CameraRowChangeEvent(((CameraRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void RemoveCameraRow(CameraRow row) {
-                this.Rows.Remove(row);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedTableSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
-                global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
-                global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
-                NewDataSet ds = new NewDataSet();
-                global::System.Xml.Schema.XmlSchemaAny any1 = new global::System.Xml.Schema.XmlSchemaAny();
-                any1.Namespace = "http://www.w3.org/2001/XMLSchema";
-                any1.MinOccurs = new decimal(0);
-                any1.MaxOccurs = decimal.MaxValue;
-                any1.ProcessContents = global::System.Xml.Schema.XmlSchemaContentProcessing.Lax;
-                sequence.Items.Add(any1);
-                global::System.Xml.Schema.XmlSchemaAny any2 = new global::System.Xml.Schema.XmlSchemaAny();
-                any2.Namespace = "urn:schemas-microsoft-com:xml-diffgram-v1";
-                any2.MinOccurs = new decimal(1);
-                any2.ProcessContents = global::System.Xml.Schema.XmlSchemaContentProcessing.Lax;
-                sequence.Items.Add(any2);
-                global::System.Xml.Schema.XmlSchemaAttribute attribute1 = new global::System.Xml.Schema.XmlSchemaAttribute();
-                attribute1.Name = "namespace";
-                attribute1.FixedValue = ds.Namespace;
-                type.Attributes.Add(attribute1);
-                global::System.Xml.Schema.XmlSchemaAttribute attribute2 = new global::System.Xml.Schema.XmlSchemaAttribute();
-                attribute2.Name = "tableTypeName";
-                attribute2.FixedValue = "CameraDataTable";
-                type.Attributes.Add(attribute2);
-                type.Particle = sequence;
-                global::System.Xml.Schema.XmlSchema dsSchema = ds.GetSchemaSerializable();
-                if (xs.Contains(dsSchema.TargetNamespace)) {
-                    global::System.IO.MemoryStream s1 = new global::System.IO.MemoryStream();
-                    global::System.IO.MemoryStream s2 = new global::System.IO.MemoryStream();
-                    try {
-                        global::System.Xml.Schema.XmlSchema schema = null;
-                        dsSchema.Write(s1);
-                        for (global::System.Collections.IEnumerator schemas = xs.Schemas(dsSchema.TargetNamespace).GetEnumerator(); schemas.MoveNext(); ) {
-                            schema = ((global::System.Xml.Schema.XmlSchema)(schemas.Current));
-                            s2.SetLength(0);
-                            schema.Write(s2);
-                            if ((s1.Length == s2.Length)) {
-                                s1.Position = 0;
-                                s2.Position = 0;
-                                for (; ((s1.Position != s1.Length) 
-                                            && (s1.ReadByte() == s2.ReadByte())); ) {
-                                    ;
-                                }
-                                if ((s1.Position == s1.Length)) {
-                                    return type;
-                                }
-                            }
-                        }
-                    }
-                    finally {
-                        if ((s1 != null)) {
-                            s1.Close();
-                        }
-                        if ((s2 != null)) {
-                            s2.Close();
-                        }
-                    }
-                }
-                xs.Add(dsSchema);
-                return type;
-            }
-        }
-        
-        /// <summary>
-        ///Represents the strongly named DataTable class.
-        ///</summary>
-        [global::System.Serializable()]
-        [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class StepDataTable : global::System.Data.TypedTableBase<StepRow> {
-            
-            private global::System.Data.DataColumn columnname;
-            
-            private global::System.Data.DataColumn columnStep_Id;
-            
-            private global::System.Data.DataColumn columnStep_Id_0;
-            
-            private global::System.Data.DataColumn columnBuildingInstruction_Id;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepDataTable() {
-                this.TableName = "Step";
-                this.BeginInit();
-                this.InitClass();
-                this.EndInit();
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal StepDataTable(global::System.Data.DataTable table) {
-                this.TableName = table.TableName;
-                if ((table.CaseSensitive != table.DataSet.CaseSensitive)) {
-                    this.CaseSensitive = table.CaseSensitive;
-                }
-                if ((table.Locale.ToString() != table.DataSet.Locale.ToString())) {
-                    this.Locale = table.Locale;
-                }
-                if ((table.Namespace != table.DataSet.Namespace)) {
-                    this.Namespace = table.Namespace;
-                }
-                this.Prefix = table.Prefix;
-                this.MinimumCapacity = table.MinimumCapacity;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected StepDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
-                    base(info, context) {
-                this.InitVars();
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn nameColumn {
-                get {
-                    return this.columnname;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn Step_IdColumn {
-                get {
-                    return this.columnStep_Id;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn Step_Id_0Column {
-                get {
-                    return this.columnStep_Id_0;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn BuildingInstruction_IdColumn {
-                get {
-                    return this.columnBuildingInstruction_Id;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            [global::System.ComponentModel.Browsable(false)]
-            public int Count {
-                get {
-                    return this.Rows.Count;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRow this[int index] {
-                get {
-                    return ((StepRow)(this.Rows[index]));
-                }
-            }
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event StepRowChangeEventHandler StepRowChanging;
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event StepRowChangeEventHandler StepRowChanged;
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event StepRowChangeEventHandler StepRowDeleting;
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event StepRowChangeEventHandler StepRowDeleted;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void AddStepRow(StepRow row) {
-                this.Rows.Add(row);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRow AddStepRow(string name, StepRow parentStepRowByStep_Step, BuildingInstructionRow parentBuildingInstructionRowByBuildingInstruction_Step) {
-                StepRow rowStepRow = ((StepRow)(this.NewRow()));
-                object[] columnValuesArray = new object[] {
-                        name,
-                        null,
-                        null,
-                        null};
-                if ((parentStepRowByStep_Step != null)) {
-                    columnValuesArray[2] = parentStepRowByStep_Step[1];
-                }
-                if ((parentBuildingInstructionRowByBuildingInstruction_Step != null)) {
-                    columnValuesArray[3] = parentBuildingInstructionRowByBuildingInstruction_Step[1];
-                }
-                rowStepRow.ItemArray = columnValuesArray;
-                this.Rows.Add(rowStepRow);
-                return rowStepRow;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public override global::System.Data.DataTable Clone() {
-                StepDataTable cln = ((StepDataTable)(base.Clone()));
-                cln.InitVars();
-                return cln;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override global::System.Data.DataTable CreateInstance() {
-                return new StepDataTable();
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal void InitVars() {
-                this.columnname = base.Columns["name"];
-                this.columnStep_Id = base.Columns["Step_Id"];
-                this.columnStep_Id_0 = base.Columns["Step_Id_0"];
-                this.columnBuildingInstruction_Id = base.Columns["BuildingInstruction_Id"];
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            private void InitClass() {
-                this.columnname = new global::System.Data.DataColumn("name", typeof(string), null, global::System.Data.MappingType.Attribute);
-                base.Columns.Add(this.columnname);
-                this.columnStep_Id = new global::System.Data.DataColumn("Step_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnStep_Id);
-                this.columnStep_Id_0 = new global::System.Data.DataColumn("Step_Id_0", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnStep_Id_0);
-                this.columnBuildingInstruction_Id = new global::System.Data.DataColumn("BuildingInstruction_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnBuildingInstruction_Id);
-                this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
-                                this.columnStep_Id}, true));
-                this.columnname.Namespace = "";
-                this.columnStep_Id.AutoIncrement = true;
-                this.columnStep_Id.AllowDBNull = false;
-                this.columnStep_Id.Unique = true;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRow NewStepRow() {
-                return ((StepRow)(this.NewRow()));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override global::System.Data.DataRow NewRowFromBuilder(global::System.Data.DataRowBuilder builder) {
-                return new StepRow(builder);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override global::System.Type GetRowType() {
-                return typeof(StepRow);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowChanged(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowChanged(e);
-                if ((this.StepRowChanged != null)) {
-                    this.StepRowChanged(this, new StepRowChangeEvent(((StepRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowChanging(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowChanging(e);
-                if ((this.StepRowChanging != null)) {
-                    this.StepRowChanging(this, new StepRowChangeEvent(((StepRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowDeleted(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowDeleted(e);
-                if ((this.StepRowDeleted != null)) {
-                    this.StepRowDeleted(this, new StepRowChangeEvent(((StepRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowDeleting(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowDeleting(e);
-                if ((this.StepRowDeleting != null)) {
-                    this.StepRowDeleting(this, new StepRowChangeEvent(((StepRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void RemoveStepRow(StepRow row) {
-                this.Rows.Remove(row);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedTableSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
-                global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
-                global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
-                NewDataSet ds = new NewDataSet();
-                global::System.Xml.Schema.XmlSchemaAny any1 = new global::System.Xml.Schema.XmlSchemaAny();
-                any1.Namespace = "http://www.w3.org/2001/XMLSchema";
-                any1.MinOccurs = new decimal(0);
-                any1.MaxOccurs = decimal.MaxValue;
-                any1.ProcessContents = global::System.Xml.Schema.XmlSchemaContentProcessing.Lax;
-                sequence.Items.Add(any1);
-                global::System.Xml.Schema.XmlSchemaAny any2 = new global::System.Xml.Schema.XmlSchemaAny();
-                any2.Namespace = "urn:schemas-microsoft-com:xml-diffgram-v1";
-                any2.MinOccurs = new decimal(1);
-                any2.ProcessContents = global::System.Xml.Schema.XmlSchemaContentProcessing.Lax;
-                sequence.Items.Add(any2);
-                global::System.Xml.Schema.XmlSchemaAttribute attribute1 = new global::System.Xml.Schema.XmlSchemaAttribute();
-                attribute1.Name = "namespace";
-                attribute1.FixedValue = ds.Namespace;
-                type.Attributes.Add(attribute1);
-                global::System.Xml.Schema.XmlSchemaAttribute attribute2 = new global::System.Xml.Schema.XmlSchemaAttribute();
-                attribute2.Name = "tableTypeName";
-                attribute2.FixedValue = "StepDataTable";
-                type.Attributes.Add(attribute2);
-                type.Particle = sequence;
-                global::System.Xml.Schema.XmlSchema dsSchema = ds.GetSchemaSerializable();
-                if (xs.Contains(dsSchema.TargetNamespace)) {
-                    global::System.IO.MemoryStream s1 = new global::System.IO.MemoryStream();
-                    global::System.IO.MemoryStream s2 = new global::System.IO.MemoryStream();
-                    try {
-                        global::System.Xml.Schema.XmlSchema schema = null;
-                        dsSchema.Write(s1);
-                        for (global::System.Collections.IEnumerator schemas = xs.Schemas(dsSchema.TargetNamespace).GetEnumerator(); schemas.MoveNext(); ) {
-                            schema = ((global::System.Xml.Schema.XmlSchema)(schemas.Current));
-                            s2.SetLength(0);
-                            schema.Write(s2);
-                            if ((s1.Length == s2.Length)) {
-                                s1.Position = 0;
-                                s2.Position = 0;
-                                for (; ((s1.Position != s1.Length) 
-                                            && (s1.ReadByte() == s2.ReadByte())); ) {
-                                    ;
-                                }
-                                if ((s1.Position == s1.Length)) {
-                                    return type;
-                                }
-                            }
-                        }
-                    }
-                    finally {
-                        if ((s1 != null)) {
-                            s1.Close();
-                        }
-                        if ((s2 != null)) {
-                            s2.Close();
-                        }
-                    }
-                }
-                xs.Add(dsSchema);
-                return type;
-            }
-        }
-        
-        /// <summary>
-        ///Represents the strongly named DataTable class.
-        ///</summary>
-        [global::System.Serializable()]
-        [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class PartRefDataTable : global::System.Data.TypedTableBase<PartRefRow> {
-            
-            private global::System.Data.DataColumn columnpartRef;
-            
-            private global::System.Data.DataColumn columnStep_Id;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public PartRefDataTable() {
-                this.TableName = "PartRef";
-                this.BeginInit();
-                this.InitClass();
-                this.EndInit();
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal PartRefDataTable(global::System.Data.DataTable table) {
-                this.TableName = table.TableName;
-                if ((table.CaseSensitive != table.DataSet.CaseSensitive)) {
-                    this.CaseSensitive = table.CaseSensitive;
-                }
-                if ((table.Locale.ToString() != table.DataSet.Locale.ToString())) {
-                    this.Locale = table.Locale;
-                }
-                if ((table.Namespace != table.DataSet.Namespace)) {
-                    this.Namespace = table.Namespace;
-                }
-                this.Prefix = table.Prefix;
-                this.MinimumCapacity = table.MinimumCapacity;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected PartRefDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
-                    base(info, context) {
-                this.InitVars();
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn partRefColumn {
-                get {
-                    return this.columnpartRef;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn Step_IdColumn {
-                get {
-                    return this.columnStep_Id;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            [global::System.ComponentModel.Browsable(false)]
-            public int Count {
-                get {
-                    return this.Rows.Count;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public PartRefRow this[int index] {
-                get {
-                    return ((PartRefRow)(this.Rows[index]));
-                }
-            }
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event PartRefRowChangeEventHandler PartRefRowChanging;
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event PartRefRowChangeEventHandler PartRefRowChanged;
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event PartRefRowChangeEventHandler PartRefRowDeleting;
-            
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event PartRefRowChangeEventHandler PartRefRowDeleted;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void AddPartRefRow(PartRefRow row) {
-                this.Rows.Add(row);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public PartRefRow AddPartRefRow(string partRef, StepRow parentStepRowByStep_PartRef) {
-                PartRefRow rowPartRefRow = ((PartRefRow)(this.NewRow()));
-                object[] columnValuesArray = new object[] {
-                        partRef,
-                        null};
-                if ((parentStepRowByStep_PartRef != null)) {
-                    columnValuesArray[1] = parentStepRowByStep_PartRef[1];
-                }
-                rowPartRefRow.ItemArray = columnValuesArray;
-                this.Rows.Add(rowPartRefRow);
-                return rowPartRefRow;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public override global::System.Data.DataTable Clone() {
-                PartRefDataTable cln = ((PartRefDataTable)(base.Clone()));
-                cln.InitVars();
-                return cln;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override global::System.Data.DataTable CreateInstance() {
-                return new PartRefDataTable();
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal void InitVars() {
-                this.columnpartRef = base.Columns["partRef"];
-                this.columnStep_Id = base.Columns["Step_Id"];
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            private void InitClass() {
-                this.columnpartRef = new global::System.Data.DataColumn("partRef", typeof(string), null, global::System.Data.MappingType.Attribute);
-                base.Columns.Add(this.columnpartRef);
-                this.columnStep_Id = new global::System.Data.DataColumn("Step_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnStep_Id);
-                this.columnpartRef.Namespace = "";
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public PartRefRow NewPartRefRow() {
-                return ((PartRefRow)(this.NewRow()));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override global::System.Data.DataRow NewRowFromBuilder(global::System.Data.DataRowBuilder builder) {
-                return new PartRefRow(builder);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override global::System.Type GetRowType() {
-                return typeof(PartRefRow);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowChanged(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowChanged(e);
-                if ((this.PartRefRowChanged != null)) {
-                    this.PartRefRowChanged(this, new PartRefRowChangeEvent(((PartRefRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowChanging(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowChanging(e);
-                if ((this.PartRefRowChanging != null)) {
-                    this.PartRefRowChanging(this, new PartRefRowChangeEvent(((PartRefRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowDeleted(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowDeleted(e);
-                if ((this.PartRefRowDeleted != null)) {
-                    this.PartRefRowDeleted(this, new PartRefRowChangeEvent(((PartRefRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected override void OnRowDeleting(global::System.Data.DataRowChangeEventArgs e) {
-                base.OnRowDeleting(e);
-                if ((this.PartRefRowDeleting != null)) {
-                    this.PartRefRowDeleting(this, new PartRefRowChangeEvent(((PartRefRow)(e.Row)), e.Action));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void RemovePartRefRow(PartRefRow row) {
-                this.Rows.Remove(row);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedTableSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
-                global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
-                global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
-                NewDataSet ds = new NewDataSet();
-                global::System.Xml.Schema.XmlSchemaAny any1 = new global::System.Xml.Schema.XmlSchemaAny();
-                any1.Namespace = "http://www.w3.org/2001/XMLSchema";
-                any1.MinOccurs = new decimal(0);
-                any1.MaxOccurs = decimal.MaxValue;
-                any1.ProcessContents = global::System.Xml.Schema.XmlSchemaContentProcessing.Lax;
-                sequence.Items.Add(any1);
-                global::System.Xml.Schema.XmlSchemaAny any2 = new global::System.Xml.Schema.XmlSchemaAny();
-                any2.Namespace = "urn:schemas-microsoft-com:xml-diffgram-v1";
-                any2.MinOccurs = new decimal(1);
-                any2.ProcessContents = global::System.Xml.Schema.XmlSchemaContentProcessing.Lax;
-                sequence.Items.Add(any2);
-                global::System.Xml.Schema.XmlSchemaAttribute attribute1 = new global::System.Xml.Schema.XmlSchemaAttribute();
-                attribute1.Name = "namespace";
-                attribute1.FixedValue = ds.Namespace;
-                type.Attributes.Add(attribute1);
-                global::System.Xml.Schema.XmlSchemaAttribute attribute2 = new global::System.Xml.Schema.XmlSchemaAttribute();
-                attribute2.Name = "tableTypeName";
-                attribute2.FixedValue = "PartRefDataTable";
-                type.Attributes.Add(attribute2);
-                type.Particle = sequence;
-                global::System.Xml.Schema.XmlSchema dsSchema = ds.GetSchemaSerializable();
-                if (xs.Contains(dsSchema.TargetNamespace)) {
-                    global::System.IO.MemoryStream s1 = new global::System.IO.MemoryStream();
-                    global::System.IO.MemoryStream s2 = new global::System.IO.MemoryStream();
-                    try {
-                        global::System.Xml.Schema.XmlSchema schema = null;
-                        dsSchema.Write(s1);
-                        for (global::System.Collections.IEnumerator schemas = xs.Schemas(dsSchema.TargetNamespace).GetEnumerator(); schemas.MoveNext(); ) {
-                            schema = ((global::System.Xml.Schema.XmlSchema)(schemas.Current));
-                            s2.SetLength(0);
-                            schema.Write(s2);
-                            if ((s1.Length == s2.Length)) {
-                                s1.Position = 0;
-                                s2.Position = 0;
-                                for (; ((s1.Position != s1.Length) 
-                                            && (s1.ReadByte() == s2.ReadByte())); ) {
-                                    ;
-                                }
-                                if ((s1.Position == s1.Length)) {
-                                    return type;
-                                }
-                            }
-                        }
-                    }
-                    finally {
-                        if ((s1 != null)) {
-                            s1.Close();
-                        }
-                        if ((s2 != null)) {
-                            s2.Close();
-                        }
-                    }
-                }
-                xs.Add(dsSchema);
-                return type;
-            }
-        }
+        public delegate void GroupRowChangeEventHandler(object sender, GroupRowChangeEvent e);
         
         /// <summary>
         ///Represents the strongly named DataTable class.
@@ -2250,6 +1180,8 @@ namespace LXFPartListCreator {
         public partial class LXFMLDataTable : global::System.Data.TypedTableBase<LXFMLRow> {
             
             private global::System.Data.DataColumn columnversionMajor;
+            
+            private global::System.Data.DataColumn columnBuildingInstructions;
             
             private global::System.Data.DataColumn columnversionMinor;
             
@@ -2295,6 +1227,14 @@ namespace LXFPartListCreator {
             public global::System.Data.DataColumn versionMajorColumn {
                 get {
                     return this.columnversionMajor;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public global::System.Data.DataColumn BuildingInstructionsColumn {
+                get {
+                    return this.columnBuildingInstructions;
                 }
             }
             
@@ -2359,10 +1299,11 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public LXFMLRow AddLXFMLRow(string versionMajor, string versionMinor, string name) {
+            public LXFMLRow AddLXFMLRow(string versionMajor, string BuildingInstructions, string versionMinor, string name) {
                 LXFMLRow rowLXFMLRow = ((LXFMLRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         versionMajor,
+                        BuildingInstructions,
                         versionMinor,
                         name,
                         null};
@@ -2389,6 +1330,7 @@ namespace LXFPartListCreator {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             internal void InitVars() {
                 this.columnversionMajor = base.Columns["versionMajor"];
+                this.columnBuildingInstructions = base.Columns["BuildingInstructions"];
                 this.columnversionMinor = base.Columns["versionMinor"];
                 this.columnname = base.Columns["name"];
                 this.columnLXFML_Id = base.Columns["LXFML_Id"];
@@ -2399,6 +1341,8 @@ namespace LXFPartListCreator {
             private void InitClass() {
                 this.columnversionMajor = new global::System.Data.DataColumn("versionMajor", typeof(string), null, global::System.Data.MappingType.Attribute);
                 base.Columns.Add(this.columnversionMajor);
+                this.columnBuildingInstructions = new global::System.Data.DataColumn("BuildingInstructions", typeof(string), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnBuildingInstructions);
                 this.columnversionMinor = new global::System.Data.DataColumn("versionMinor", typeof(string), null, global::System.Data.MappingType.Attribute);
                 base.Columns.Add(this.columnversionMinor);
                 this.columnname = new global::System.Data.DataColumn("name", typeof(string), null, global::System.Data.MappingType.Attribute);
@@ -2642,7 +1586,7 @@ namespace LXFPartListCreator {
                         null,
                         null};
                 if ((parentLXFMLRowByLXFML_Meta != null)) {
-                    columnValuesArray[1] = parentLXFMLRowByLXFML_Meta[3];
+                    columnValuesArray[1] = parentLXFMLRowByLXFML_Meta[4];
                 }
                 rowMetaRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowMetaRow);
@@ -3736,7 +2680,7 @@ namespace LXFPartListCreator {
                         null,
                         null};
                 if ((parentLXFMLRowByLXFML_Cameras != null)) {
-                    columnValuesArray[1] = parentLXFMLRowByLXFML_Cameras[3];
+                    columnValuesArray[1] = parentLXFMLRowByLXFML_Cameras[4];
                 }
                 rowCamerasRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowCamerasRow);
@@ -3907,6 +2851,316 @@ namespace LXFPartListCreator {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
+        public partial class CameraDataTable : global::System.Data.TypedTableBase<CameraRow> {
+            
+            private global::System.Data.DataColumn columnrefID;
+            
+            private global::System.Data.DataColumn columnfieldOfView;
+            
+            private global::System.Data.DataColumn columndistance;
+            
+            private global::System.Data.DataColumn columntransformation;
+            
+            private global::System.Data.DataColumn columnCameras_Id;
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public CameraDataTable() {
+                this.TableName = "Camera";
+                this.BeginInit();
+                this.InitClass();
+                this.EndInit();
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            internal CameraDataTable(global::System.Data.DataTable table) {
+                this.TableName = table.TableName;
+                if ((table.CaseSensitive != table.DataSet.CaseSensitive)) {
+                    this.CaseSensitive = table.CaseSensitive;
+                }
+                if ((table.Locale.ToString() != table.DataSet.Locale.ToString())) {
+                    this.Locale = table.Locale;
+                }
+                if ((table.Namespace != table.DataSet.Namespace)) {
+                    this.Namespace = table.Namespace;
+                }
+                this.Prefix = table.Prefix;
+                this.MinimumCapacity = table.MinimumCapacity;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            protected CameraDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
+                    base(info, context) {
+                this.InitVars();
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public global::System.Data.DataColumn refIDColumn {
+                get {
+                    return this.columnrefID;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public global::System.Data.DataColumn fieldOfViewColumn {
+                get {
+                    return this.columnfieldOfView;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public global::System.Data.DataColumn distanceColumn {
+                get {
+                    return this.columndistance;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public global::System.Data.DataColumn transformationColumn {
+                get {
+                    return this.columntransformation;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public global::System.Data.DataColumn Cameras_IdColumn {
+                get {
+                    return this.columnCameras_Id;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            [global::System.ComponentModel.Browsable(false)]
+            public int Count {
+                get {
+                    return this.Rows.Count;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public CameraRow this[int index] {
+                get {
+                    return ((CameraRow)(this.Rows[index]));
+                }
+            }
+            
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public event CameraRowChangeEventHandler CameraRowChanging;
+            
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public event CameraRowChangeEventHandler CameraRowChanged;
+            
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public event CameraRowChangeEventHandler CameraRowDeleting;
+            
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public event CameraRowChangeEventHandler CameraRowDeleted;
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void AddCameraRow(CameraRow row) {
+                this.Rows.Add(row);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public CameraRow AddCameraRow(string refID, string fieldOfView, string distance, string transformation, CamerasRow parentCamerasRowByCameras_Camera) {
+                CameraRow rowCameraRow = ((CameraRow)(this.NewRow()));
+                object[] columnValuesArray = new object[] {
+                        refID,
+                        fieldOfView,
+                        distance,
+                        transformation,
+                        null};
+                if ((parentCamerasRowByCameras_Camera != null)) {
+                    columnValuesArray[4] = parentCamerasRowByCameras_Camera[0];
+                }
+                rowCameraRow.ItemArray = columnValuesArray;
+                this.Rows.Add(rowCameraRow);
+                return rowCameraRow;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public override global::System.Data.DataTable Clone() {
+                CameraDataTable cln = ((CameraDataTable)(base.Clone()));
+                cln.InitVars();
+                return cln;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            protected override global::System.Data.DataTable CreateInstance() {
+                return new CameraDataTable();
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            internal void InitVars() {
+                this.columnrefID = base.Columns["refID"];
+                this.columnfieldOfView = base.Columns["fieldOfView"];
+                this.columndistance = base.Columns["distance"];
+                this.columntransformation = base.Columns["transformation"];
+                this.columnCameras_Id = base.Columns["Cameras_Id"];
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            private void InitClass() {
+                this.columnrefID = new global::System.Data.DataColumn("refID", typeof(string), null, global::System.Data.MappingType.Attribute);
+                base.Columns.Add(this.columnrefID);
+                this.columnfieldOfView = new global::System.Data.DataColumn("fieldOfView", typeof(string), null, global::System.Data.MappingType.Attribute);
+                base.Columns.Add(this.columnfieldOfView);
+                this.columndistance = new global::System.Data.DataColumn("distance", typeof(string), null, global::System.Data.MappingType.Attribute);
+                base.Columns.Add(this.columndistance);
+                this.columntransformation = new global::System.Data.DataColumn("transformation", typeof(string), null, global::System.Data.MappingType.Attribute);
+                base.Columns.Add(this.columntransformation);
+                this.columnCameras_Id = new global::System.Data.DataColumn("Cameras_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
+                base.Columns.Add(this.columnCameras_Id);
+                this.columnrefID.Namespace = "";
+                this.columnfieldOfView.Namespace = "";
+                this.columndistance.Namespace = "";
+                this.columntransformation.Namespace = "";
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public CameraRow NewCameraRow() {
+                return ((CameraRow)(this.NewRow()));
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            protected override global::System.Data.DataRow NewRowFromBuilder(global::System.Data.DataRowBuilder builder) {
+                return new CameraRow(builder);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            protected override global::System.Type GetRowType() {
+                return typeof(CameraRow);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            protected override void OnRowChanged(global::System.Data.DataRowChangeEventArgs e) {
+                base.OnRowChanged(e);
+                if ((this.CameraRowChanged != null)) {
+                    this.CameraRowChanged(this, new CameraRowChangeEvent(((CameraRow)(e.Row)), e.Action));
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            protected override void OnRowChanging(global::System.Data.DataRowChangeEventArgs e) {
+                base.OnRowChanging(e);
+                if ((this.CameraRowChanging != null)) {
+                    this.CameraRowChanging(this, new CameraRowChangeEvent(((CameraRow)(e.Row)), e.Action));
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            protected override void OnRowDeleted(global::System.Data.DataRowChangeEventArgs e) {
+                base.OnRowDeleted(e);
+                if ((this.CameraRowDeleted != null)) {
+                    this.CameraRowDeleted(this, new CameraRowChangeEvent(((CameraRow)(e.Row)), e.Action));
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            protected override void OnRowDeleting(global::System.Data.DataRowChangeEventArgs e) {
+                base.OnRowDeleting(e);
+                if ((this.CameraRowDeleting != null)) {
+                    this.CameraRowDeleting(this, new CameraRowChangeEvent(((CameraRow)(e.Row)), e.Action));
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void RemoveCameraRow(CameraRow row) {
+                this.Rows.Remove(row);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public static global::System.Xml.Schema.XmlSchemaComplexType GetTypedTableSchema(global::System.Xml.Schema.XmlSchemaSet xs) {
+                global::System.Xml.Schema.XmlSchemaComplexType type = new global::System.Xml.Schema.XmlSchemaComplexType();
+                global::System.Xml.Schema.XmlSchemaSequence sequence = new global::System.Xml.Schema.XmlSchemaSequence();
+                NewDataSet ds = new NewDataSet();
+                global::System.Xml.Schema.XmlSchemaAny any1 = new global::System.Xml.Schema.XmlSchemaAny();
+                any1.Namespace = "http://www.w3.org/2001/XMLSchema";
+                any1.MinOccurs = new decimal(0);
+                any1.MaxOccurs = decimal.MaxValue;
+                any1.ProcessContents = global::System.Xml.Schema.XmlSchemaContentProcessing.Lax;
+                sequence.Items.Add(any1);
+                global::System.Xml.Schema.XmlSchemaAny any2 = new global::System.Xml.Schema.XmlSchemaAny();
+                any2.Namespace = "urn:schemas-microsoft-com:xml-diffgram-v1";
+                any2.MinOccurs = new decimal(1);
+                any2.ProcessContents = global::System.Xml.Schema.XmlSchemaContentProcessing.Lax;
+                sequence.Items.Add(any2);
+                global::System.Xml.Schema.XmlSchemaAttribute attribute1 = new global::System.Xml.Schema.XmlSchemaAttribute();
+                attribute1.Name = "namespace";
+                attribute1.FixedValue = ds.Namespace;
+                type.Attributes.Add(attribute1);
+                global::System.Xml.Schema.XmlSchemaAttribute attribute2 = new global::System.Xml.Schema.XmlSchemaAttribute();
+                attribute2.Name = "tableTypeName";
+                attribute2.FixedValue = "CameraDataTable";
+                type.Attributes.Add(attribute2);
+                type.Particle = sequence;
+                global::System.Xml.Schema.XmlSchema dsSchema = ds.GetSchemaSerializable();
+                if (xs.Contains(dsSchema.TargetNamespace)) {
+                    global::System.IO.MemoryStream s1 = new global::System.IO.MemoryStream();
+                    global::System.IO.MemoryStream s2 = new global::System.IO.MemoryStream();
+                    try {
+                        global::System.Xml.Schema.XmlSchema schema = null;
+                        dsSchema.Write(s1);
+                        for (global::System.Collections.IEnumerator schemas = xs.Schemas(dsSchema.TargetNamespace).GetEnumerator(); schemas.MoveNext(); ) {
+                            schema = ((global::System.Xml.Schema.XmlSchema)(schemas.Current));
+                            s2.SetLength(0);
+                            schema.Write(s2);
+                            if ((s1.Length == s2.Length)) {
+                                s1.Position = 0;
+                                s2.Position = 0;
+                                for (; ((s1.Position != s1.Length) 
+                                            && (s1.ReadByte() == s2.ReadByte())); ) {
+                                    ;
+                                }
+                                if ((s1.Position == s1.Length)) {
+                                    return type;
+                                }
+                            }
+                        }
+                    }
+                    finally {
+                        if ((s1 != null)) {
+                            s1.Close();
+                        }
+                        if ((s2 != null)) {
+                            s2.Close();
+                        }
+                    }
+                }
+                xs.Add(dsSchema);
+                return type;
+            }
+        }
+        
+        /// <summary>
+        ///Represents the strongly named DataTable class.
+        ///</summary>
+        [global::System.Serializable()]
+        [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
         public partial class BricksDataTable : global::System.Data.TypedTableBase<BricksRow> {
             
             private global::System.Data.DataColumn columncameraRef;
@@ -4016,7 +3270,7 @@ namespace LXFPartListCreator {
                         null,
                         null};
                 if ((parentLXFMLRowByLXFML_Bricks != null)) {
-                    columnValuesArray[2] = parentLXFMLRowByLXFML_Bricks[3];
+                    columnValuesArray[2] = parentLXFMLRowByLXFML_Bricks[4];
                 }
                 rowBricksRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowBricksRow);
@@ -5197,7 +4451,7 @@ namespace LXFPartListCreator {
                         null,
                         null};
                 if ((parentLXFMLRowByLXFML_RigidSystems != null)) {
-                    columnValuesArray[1] = parentLXFMLRowByLXFML_RigidSystems[3];
+                    columnValuesArray[1] = parentLXFMLRowByLXFML_RigidSystems[4];
                 }
                 rowRigidSystemsRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowRigidSystemsRow);
@@ -6528,7 +5782,7 @@ namespace LXFPartListCreator {
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
         public partial class GroupSystemsDataTable : global::System.Data.TypedTableBase<GroupSystemsRow> {
             
-            private global::System.Data.DataColumn columnGroupSystem;
+            private global::System.Data.DataColumn columnGroupSystems_Id;
             
             private global::System.Data.DataColumn columnLXFML_Id;
             
@@ -6567,9 +5821,9 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn GroupSystemColumn {
+            public global::System.Data.DataColumn GroupSystems_IdColumn {
                 get {
-                    return this.columnGroupSystem;
+                    return this.columnGroupSystems_Id;
                 }
             }
             
@@ -6618,13 +5872,13 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public GroupSystemsRow AddGroupSystemsRow(string GroupSystem, LXFMLRow parentLXFMLRowByLXFML_GroupSystems) {
+            public GroupSystemsRow AddGroupSystemsRow(LXFMLRow parentLXFMLRowByLXFML_GroupSystems) {
                 GroupSystemsRow rowGroupSystemsRow = ((GroupSystemsRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
-                        GroupSystem,
+                        null,
                         null};
                 if ((parentLXFMLRowByLXFML_GroupSystems != null)) {
-                    columnValuesArray[1] = parentLXFMLRowByLXFML_GroupSystems[3];
+                    columnValuesArray[1] = parentLXFMLRowByLXFML_GroupSystems[4];
                 }
                 rowGroupSystemsRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowGroupSystemsRow);
@@ -6648,17 +5902,22 @@ namespace LXFPartListCreator {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             internal void InitVars() {
-                this.columnGroupSystem = base.Columns["GroupSystem"];
+                this.columnGroupSystems_Id = base.Columns["GroupSystems_Id"];
                 this.columnLXFML_Id = base.Columns["LXFML_Id"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             private void InitClass() {
-                this.columnGroupSystem = new global::System.Data.DataColumn("GroupSystem", typeof(string), null, global::System.Data.MappingType.Element);
-                base.Columns.Add(this.columnGroupSystem);
+                this.columnGroupSystems_Id = new global::System.Data.DataColumn("GroupSystems_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
+                base.Columns.Add(this.columnGroupSystems_Id);
                 this.columnLXFML_Id = new global::System.Data.DataColumn("LXFML_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
                 base.Columns.Add(this.columnLXFML_Id);
+                this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
+                                this.columnGroupSystems_Id}, true));
+                this.columnGroupSystems_Id.AutoIncrement = true;
+                this.columnGroupSystems_Id.AllowDBNull = false;
+                this.columnGroupSystems_Id.Unique = true;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -6790,16 +6049,16 @@ namespace LXFPartListCreator {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class BuildingInstructionsDataTable : global::System.Data.TypedTableBase<BuildingInstructionsRow> {
+        public partial class GroupSystemDataTable : global::System.Data.TypedTableBase<GroupSystemRow> {
             
-            private global::System.Data.DataColumn columnBuildingInstructions_Id;
+            private global::System.Data.DataColumn columnGroupSystem_Id;
             
-            private global::System.Data.DataColumn columnLXFML_Id;
+            private global::System.Data.DataColumn columnGroupSystems_Id;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionsDataTable() {
-                this.TableName = "BuildingInstructions";
+            public GroupSystemDataTable() {
+                this.TableName = "GroupSystem";
                 this.BeginInit();
                 this.InitClass();
                 this.EndInit();
@@ -6807,7 +6066,7 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal BuildingInstructionsDataTable(global::System.Data.DataTable table) {
+            internal GroupSystemDataTable(global::System.Data.DataTable table) {
                 this.TableName = table.TableName;
                 if ((table.CaseSensitive != table.DataSet.CaseSensitive)) {
                     this.CaseSensitive = table.CaseSensitive;
@@ -6824,24 +6083,24 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected BuildingInstructionsDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
+            protected GroupSystemDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
                     base(info, context) {
                 this.InitVars();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn BuildingInstructions_IdColumn {
+            public global::System.Data.DataColumn GroupSystem_IdColumn {
                 get {
-                    return this.columnBuildingInstructions_Id;
+                    return this.columnGroupSystem_Id;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn LXFML_IdColumn {
+            public global::System.Data.DataColumn GroupSystems_IdColumn {
                 get {
-                    return this.columnLXFML_Id;
+                    return this.columnGroupSystems_Id;
                 }
             }
             
@@ -6856,49 +6115,49 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionsRow this[int index] {
+            public GroupSystemRow this[int index] {
                 get {
-                    return ((BuildingInstructionsRow)(this.Rows[index]));
+                    return ((GroupSystemRow)(this.Rows[index]));
                 }
             }
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event BuildingInstructionsRowChangeEventHandler BuildingInstructionsRowChanging;
+            public event GroupSystemRowChangeEventHandler GroupSystemRowChanging;
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event BuildingInstructionsRowChangeEventHandler BuildingInstructionsRowChanged;
+            public event GroupSystemRowChangeEventHandler GroupSystemRowChanged;
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event BuildingInstructionsRowChangeEventHandler BuildingInstructionsRowDeleting;
+            public event GroupSystemRowChangeEventHandler GroupSystemRowDeleting;
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event BuildingInstructionsRowChangeEventHandler BuildingInstructionsRowDeleted;
+            public event GroupSystemRowChangeEventHandler GroupSystemRowDeleted;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void AddBuildingInstructionsRow(BuildingInstructionsRow row) {
+            public void AddGroupSystemRow(GroupSystemRow row) {
                 this.Rows.Add(row);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionsRow AddBuildingInstructionsRow(LXFMLRow parentLXFMLRowByLXFML_BuildingInstructions) {
-                BuildingInstructionsRow rowBuildingInstructionsRow = ((BuildingInstructionsRow)(this.NewRow()));
+            public GroupSystemRow AddGroupSystemRow(GroupSystemsRow parentGroupSystemsRowByGroupSystems_GroupSystem) {
+                GroupSystemRow rowGroupSystemRow = ((GroupSystemRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         null,
                         null};
-                if ((parentLXFMLRowByLXFML_BuildingInstructions != null)) {
-                    columnValuesArray[1] = parentLXFMLRowByLXFML_BuildingInstructions[3];
+                if ((parentGroupSystemsRowByGroupSystems_GroupSystem != null)) {
+                    columnValuesArray[1] = parentGroupSystemsRowByGroupSystems_GroupSystem[0];
                 }
-                rowBuildingInstructionsRow.ItemArray = columnValuesArray;
-                this.Rows.Add(rowBuildingInstructionsRow);
-                return rowBuildingInstructionsRow;
+                rowGroupSystemRow.ItemArray = columnValuesArray;
+                this.Rows.Add(rowGroupSystemRow);
+                return rowGroupSystemRow;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             public override global::System.Data.DataTable Clone() {
-                BuildingInstructionsDataTable cln = ((BuildingInstructionsDataTable)(base.Clone()));
+                GroupSystemDataTable cln = ((GroupSystemDataTable)(base.Clone()));
                 cln.InitVars();
                 return cln;
             }
@@ -6906,54 +6165,54 @@ namespace LXFPartListCreator {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override global::System.Data.DataTable CreateInstance() {
-                return new BuildingInstructionsDataTable();
+                return new GroupSystemDataTable();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             internal void InitVars() {
-                this.columnBuildingInstructions_Id = base.Columns["BuildingInstructions_Id"];
-                this.columnLXFML_Id = base.Columns["LXFML_Id"];
+                this.columnGroupSystem_Id = base.Columns["GroupSystem_Id"];
+                this.columnGroupSystems_Id = base.Columns["GroupSystems_Id"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             private void InitClass() {
-                this.columnBuildingInstructions_Id = new global::System.Data.DataColumn("BuildingInstructions_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnBuildingInstructions_Id);
-                this.columnLXFML_Id = new global::System.Data.DataColumn("LXFML_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnLXFML_Id);
+                this.columnGroupSystem_Id = new global::System.Data.DataColumn("GroupSystem_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
+                base.Columns.Add(this.columnGroupSystem_Id);
+                this.columnGroupSystems_Id = new global::System.Data.DataColumn("GroupSystems_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
+                base.Columns.Add(this.columnGroupSystems_Id);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
-                                this.columnBuildingInstructions_Id}, true));
-                this.columnBuildingInstructions_Id.AutoIncrement = true;
-                this.columnBuildingInstructions_Id.AllowDBNull = false;
-                this.columnBuildingInstructions_Id.Unique = true;
+                                this.columnGroupSystem_Id}, true));
+                this.columnGroupSystem_Id.AutoIncrement = true;
+                this.columnGroupSystem_Id.AllowDBNull = false;
+                this.columnGroupSystem_Id.Unique = true;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionsRow NewBuildingInstructionsRow() {
-                return ((BuildingInstructionsRow)(this.NewRow()));
+            public GroupSystemRow NewGroupSystemRow() {
+                return ((GroupSystemRow)(this.NewRow()));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override global::System.Data.DataRow NewRowFromBuilder(global::System.Data.DataRowBuilder builder) {
-                return new BuildingInstructionsRow(builder);
+                return new GroupSystemRow(builder);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override global::System.Type GetRowType() {
-                return typeof(BuildingInstructionsRow);
+                return typeof(GroupSystemRow);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override void OnRowChanged(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowChanged(e);
-                if ((this.BuildingInstructionsRowChanged != null)) {
-                    this.BuildingInstructionsRowChanged(this, new BuildingInstructionsRowChangeEvent(((BuildingInstructionsRow)(e.Row)), e.Action));
+                if ((this.GroupSystemRowChanged != null)) {
+                    this.GroupSystemRowChanged(this, new GroupSystemRowChangeEvent(((GroupSystemRow)(e.Row)), e.Action));
                 }
             }
             
@@ -6961,8 +6220,8 @@ namespace LXFPartListCreator {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override void OnRowChanging(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowChanging(e);
-                if ((this.BuildingInstructionsRowChanging != null)) {
-                    this.BuildingInstructionsRowChanging(this, new BuildingInstructionsRowChangeEvent(((BuildingInstructionsRow)(e.Row)), e.Action));
+                if ((this.GroupSystemRowChanging != null)) {
+                    this.GroupSystemRowChanging(this, new GroupSystemRowChangeEvent(((GroupSystemRow)(e.Row)), e.Action));
                 }
             }
             
@@ -6970,8 +6229,8 @@ namespace LXFPartListCreator {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override void OnRowDeleted(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowDeleted(e);
-                if ((this.BuildingInstructionsRowDeleted != null)) {
-                    this.BuildingInstructionsRowDeleted(this, new BuildingInstructionsRowChangeEvent(((BuildingInstructionsRow)(e.Row)), e.Action));
+                if ((this.GroupSystemRowDeleted != null)) {
+                    this.GroupSystemRowDeleted(this, new GroupSystemRowChangeEvent(((GroupSystemRow)(e.Row)), e.Action));
                 }
             }
             
@@ -6979,14 +6238,14 @@ namespace LXFPartListCreator {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override void OnRowDeleting(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowDeleting(e);
-                if ((this.BuildingInstructionsRowDeleting != null)) {
-                    this.BuildingInstructionsRowDeleting(this, new BuildingInstructionsRowChangeEvent(((BuildingInstructionsRow)(e.Row)), e.Action));
+                if ((this.GroupSystemRowDeleting != null)) {
+                    this.GroupSystemRowDeleting(this, new GroupSystemRowChangeEvent(((GroupSystemRow)(e.Row)), e.Action));
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void RemoveBuildingInstructionsRow(BuildingInstructionsRow row) {
+            public void RemoveGroupSystemRow(GroupSystemRow row) {
                 this.Rows.Remove(row);
             }
             
@@ -7013,7 +6272,7 @@ namespace LXFPartListCreator {
                 type.Attributes.Add(attribute1);
                 global::System.Xml.Schema.XmlSchemaAttribute attribute2 = new global::System.Xml.Schema.XmlSchemaAttribute();
                 attribute2.Name = "tableTypeName";
-                attribute2.FixedValue = "BuildingInstructionsDataTable";
+                attribute2.FixedValue = "GroupSystemDataTable";
                 type.Attributes.Add(attribute2);
                 type.Particle = sequence;
                 global::System.Xml.Schema.XmlSchema dsSchema = ds.GetSchemaSerializable();
@@ -7059,18 +6318,20 @@ namespace LXFPartListCreator {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class BuildingInstructionDataTable : global::System.Data.TypedTableBase<BuildingInstructionRow> {
+        public partial class GroupDataTable : global::System.Data.TypedTableBase<GroupRow> {
             
-            private global::System.Data.DataColumn columnname;
+            private global::System.Data.DataColumn columntransformation;
             
-            private global::System.Data.DataColumn columnBuildingInstruction_Id;
+            private global::System.Data.DataColumn columnpivot;
             
-            private global::System.Data.DataColumn columnBuildingInstructions_Id;
+            private global::System.Data.DataColumn columnpartRefs;
+            
+            private global::System.Data.DataColumn columnGroupSystem_Id;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionDataTable() {
-                this.TableName = "BuildingInstruction";
+            public GroupDataTable() {
+                this.TableName = "Group";
                 this.BeginInit();
                 this.InitClass();
                 this.EndInit();
@@ -7078,7 +6339,7 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal BuildingInstructionDataTable(global::System.Data.DataTable table) {
+            internal GroupDataTable(global::System.Data.DataTable table) {
                 this.TableName = table.TableName;
                 if ((table.CaseSensitive != table.DataSet.CaseSensitive)) {
                     this.CaseSensitive = table.CaseSensitive;
@@ -7095,32 +6356,40 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            protected BuildingInstructionDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
+            protected GroupDataTable(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context) : 
                     base(info, context) {
                 this.InitVars();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn nameColumn {
+            public global::System.Data.DataColumn transformationColumn {
                 get {
-                    return this.columnname;
+                    return this.columntransformation;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn BuildingInstruction_IdColumn {
+            public global::System.Data.DataColumn pivotColumn {
                 get {
-                    return this.columnBuildingInstruction_Id;
+                    return this.columnpivot;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataColumn BuildingInstructions_IdColumn {
+            public global::System.Data.DataColumn partRefsColumn {
                 get {
-                    return this.columnBuildingInstructions_Id;
+                    return this.columnpartRefs;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public global::System.Data.DataColumn GroupSystem_IdColumn {
+                get {
+                    return this.columnGroupSystem_Id;
                 }
             }
             
@@ -7135,50 +6404,51 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionRow this[int index] {
+            public GroupRow this[int index] {
                 get {
-                    return ((BuildingInstructionRow)(this.Rows[index]));
+                    return ((GroupRow)(this.Rows[index]));
                 }
             }
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event BuildingInstructionRowChangeEventHandler BuildingInstructionRowChanging;
+            public event GroupRowChangeEventHandler GroupRowChanging;
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event BuildingInstructionRowChangeEventHandler BuildingInstructionRowChanged;
+            public event GroupRowChangeEventHandler GroupRowChanged;
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event BuildingInstructionRowChangeEventHandler BuildingInstructionRowDeleting;
+            public event GroupRowChangeEventHandler GroupRowDeleting;
             
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public event BuildingInstructionRowChangeEventHandler BuildingInstructionRowDeleted;
+            public event GroupRowChangeEventHandler GroupRowDeleted;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void AddBuildingInstructionRow(BuildingInstructionRow row) {
+            public void AddGroupRow(GroupRow row) {
                 this.Rows.Add(row);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionRow AddBuildingInstructionRow(string name, BuildingInstructionsRow parentBuildingInstructionsRowByBuildingInstructions_BuildingInstruction) {
-                BuildingInstructionRow rowBuildingInstructionRow = ((BuildingInstructionRow)(this.NewRow()));
+            public GroupRow AddGroupRow(string transformation, string pivot, string partRefs, GroupSystemRow parentGroupSystemRowByGroupSystem_Group) {
+                GroupRow rowGroupRow = ((GroupRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
-                        name,
-                        null,
+                        transformation,
+                        pivot,
+                        partRefs,
                         null};
-                if ((parentBuildingInstructionsRowByBuildingInstructions_BuildingInstruction != null)) {
-                    columnValuesArray[2] = parentBuildingInstructionsRowByBuildingInstructions_BuildingInstruction[0];
+                if ((parentGroupSystemRowByGroupSystem_Group != null)) {
+                    columnValuesArray[3] = parentGroupSystemRowByGroupSystem_Group[0];
                 }
-                rowBuildingInstructionRow.ItemArray = columnValuesArray;
-                this.Rows.Add(rowBuildingInstructionRow);
-                return rowBuildingInstructionRow;
+                rowGroupRow.ItemArray = columnValuesArray;
+                this.Rows.Add(rowGroupRow);
+                return rowGroupRow;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             public override global::System.Data.DataTable Clone() {
-                BuildingInstructionDataTable cln = ((BuildingInstructionDataTable)(base.Clone()));
+                GroupDataTable cln = ((GroupDataTable)(base.Clone()));
                 cln.InitVars();
                 return cln;
             }
@@ -7186,58 +6456,58 @@ namespace LXFPartListCreator {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override global::System.Data.DataTable CreateInstance() {
-                return new BuildingInstructionDataTable();
+                return new GroupDataTable();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             internal void InitVars() {
-                this.columnname = base.Columns["name"];
-                this.columnBuildingInstruction_Id = base.Columns["BuildingInstruction_Id"];
-                this.columnBuildingInstructions_Id = base.Columns["BuildingInstructions_Id"];
+                this.columntransformation = base.Columns["transformation"];
+                this.columnpivot = base.Columns["pivot"];
+                this.columnpartRefs = base.Columns["partRefs"];
+                this.columnGroupSystem_Id = base.Columns["GroupSystem_Id"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             private void InitClass() {
-                this.columnname = new global::System.Data.DataColumn("name", typeof(string), null, global::System.Data.MappingType.Attribute);
-                base.Columns.Add(this.columnname);
-                this.columnBuildingInstruction_Id = new global::System.Data.DataColumn("BuildingInstruction_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnBuildingInstruction_Id);
-                this.columnBuildingInstructions_Id = new global::System.Data.DataColumn("BuildingInstructions_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
-                base.Columns.Add(this.columnBuildingInstructions_Id);
-                this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
-                                this.columnBuildingInstruction_Id}, true));
-                this.columnname.Namespace = "";
-                this.columnBuildingInstruction_Id.AutoIncrement = true;
-                this.columnBuildingInstruction_Id.AllowDBNull = false;
-                this.columnBuildingInstruction_Id.Unique = true;
+                this.columntransformation = new global::System.Data.DataColumn("transformation", typeof(string), null, global::System.Data.MappingType.Attribute);
+                base.Columns.Add(this.columntransformation);
+                this.columnpivot = new global::System.Data.DataColumn("pivot", typeof(string), null, global::System.Data.MappingType.Attribute);
+                base.Columns.Add(this.columnpivot);
+                this.columnpartRefs = new global::System.Data.DataColumn("partRefs", typeof(string), null, global::System.Data.MappingType.Attribute);
+                base.Columns.Add(this.columnpartRefs);
+                this.columnGroupSystem_Id = new global::System.Data.DataColumn("GroupSystem_Id", typeof(int), null, global::System.Data.MappingType.Hidden);
+                base.Columns.Add(this.columnGroupSystem_Id);
+                this.columntransformation.Namespace = "";
+                this.columnpivot.Namespace = "";
+                this.columnpartRefs.Namespace = "";
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionRow NewBuildingInstructionRow() {
-                return ((BuildingInstructionRow)(this.NewRow()));
+            public GroupRow NewGroupRow() {
+                return ((GroupRow)(this.NewRow()));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override global::System.Data.DataRow NewRowFromBuilder(global::System.Data.DataRowBuilder builder) {
-                return new BuildingInstructionRow(builder);
+                return new GroupRow(builder);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override global::System.Type GetRowType() {
-                return typeof(BuildingInstructionRow);
+                return typeof(GroupRow);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override void OnRowChanged(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowChanged(e);
-                if ((this.BuildingInstructionRowChanged != null)) {
-                    this.BuildingInstructionRowChanged(this, new BuildingInstructionRowChangeEvent(((BuildingInstructionRow)(e.Row)), e.Action));
+                if ((this.GroupRowChanged != null)) {
+                    this.GroupRowChanged(this, new GroupRowChangeEvent(((GroupRow)(e.Row)), e.Action));
                 }
             }
             
@@ -7245,8 +6515,8 @@ namespace LXFPartListCreator {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override void OnRowChanging(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowChanging(e);
-                if ((this.BuildingInstructionRowChanging != null)) {
-                    this.BuildingInstructionRowChanging(this, new BuildingInstructionRowChangeEvent(((BuildingInstructionRow)(e.Row)), e.Action));
+                if ((this.GroupRowChanging != null)) {
+                    this.GroupRowChanging(this, new GroupRowChangeEvent(((GroupRow)(e.Row)), e.Action));
                 }
             }
             
@@ -7254,8 +6524,8 @@ namespace LXFPartListCreator {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override void OnRowDeleted(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowDeleted(e);
-                if ((this.BuildingInstructionRowDeleted != null)) {
-                    this.BuildingInstructionRowDeleted(this, new BuildingInstructionRowChangeEvent(((BuildingInstructionRow)(e.Row)), e.Action));
+                if ((this.GroupRowDeleted != null)) {
+                    this.GroupRowDeleted(this, new GroupRowChangeEvent(((GroupRow)(e.Row)), e.Action));
                 }
             }
             
@@ -7263,14 +6533,14 @@ namespace LXFPartListCreator {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             protected override void OnRowDeleting(global::System.Data.DataRowChangeEventArgs e) {
                 base.OnRowDeleting(e);
-                if ((this.BuildingInstructionRowDeleting != null)) {
-                    this.BuildingInstructionRowDeleting(this, new BuildingInstructionRowChangeEvent(((BuildingInstructionRow)(e.Row)), e.Action));
+                if ((this.GroupRowDeleting != null)) {
+                    this.GroupRowDeleting(this, new GroupRowChangeEvent(((GroupRow)(e.Row)), e.Action));
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void RemoveBuildingInstructionRow(BuildingInstructionRow row) {
+            public void RemoveGroupRow(GroupRow row) {
                 this.Rows.Remove(row);
             }
             
@@ -7297,7 +6567,7 @@ namespace LXFPartListCreator {
                 type.Attributes.Add(attribute1);
                 global::System.Xml.Schema.XmlSchemaAttribute attribute2 = new global::System.Xml.Schema.XmlSchemaAttribute();
                 attribute2.Name = "tableTypeName";
-                attribute2.FixedValue = "BuildingInstructionDataTable";
+                attribute2.FixedValue = "GroupDataTable";
                 type.Attributes.Add(attribute2);
                 type.Particle = sequence;
                 global::System.Xml.Schema.XmlSchema dsSchema = ds.GetSchemaSerializable();
@@ -7341,525 +6611,6 @@ namespace LXFPartListCreator {
         /// <summary>
         ///Represents strongly named DataRow class.
         ///</summary>
-        public partial class CameraRow : global::System.Data.DataRow {
-            
-            private CameraDataTable tableCamera;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal CameraRow(global::System.Data.DataRowBuilder rb) : 
-                    base(rb) {
-                this.tableCamera = ((CameraDataTable)(this.Table));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public string refID {
-                get {
-                    try {
-                        return ((string)(this[this.tableCamera.refIDColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'refID\' in table \'Camera\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableCamera.refIDColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public string fieldOfView {
-                get {
-                    try {
-                        return ((string)(this[this.tableCamera.fieldOfViewColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'fieldOfView\' in table \'Camera\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableCamera.fieldOfViewColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public string distance {
-                get {
-                    try {
-                        return ((string)(this[this.tableCamera.distanceColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'distance\' in table \'Camera\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableCamera.distanceColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public string transformation {
-                get {
-                    try {
-                        return ((string)(this[this.tableCamera.transformationColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'transformation\' in table \'Camera\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableCamera.transformationColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public string cameraRef {
-                get {
-                    try {
-                        return ((string)(this[this.tableCamera.cameraRefColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'cameraRef\' in table \'Camera\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableCamera.cameraRefColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int Step_Id {
-                get {
-                    try {
-                        return ((int)(this[this.tableCamera.Step_IdColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'Step_Id\' in table \'Camera\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableCamera.Step_IdColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int Cameras_Id {
-                get {
-                    try {
-                        return ((int)(this[this.tableCamera.Cameras_IdColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'Cameras_Id\' in table \'Camera\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableCamera.Cameras_IdColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int BuildingInstruction_Id {
-                get {
-                    try {
-                        return ((int)(this[this.tableCamera.BuildingInstruction_IdColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'BuildingInstruction_Id\' in table \'Camera\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableCamera.BuildingInstruction_IdColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRow StepRow {
-                get {
-                    return ((StepRow)(this.GetParentRow(this.Table.ParentRelations["Step_Camera"])));
-                }
-                set {
-                    this.SetParentRow(value, this.Table.ParentRelations["Step_Camera"]);
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public CamerasRow CamerasRow {
-                get {
-                    return ((CamerasRow)(this.GetParentRow(this.Table.ParentRelations["Cameras_Camera"])));
-                }
-                set {
-                    this.SetParentRow(value, this.Table.ParentRelations["Cameras_Camera"]);
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionRow BuildingInstructionRow {
-                get {
-                    return ((BuildingInstructionRow)(this.GetParentRow(this.Table.ParentRelations["BuildingInstruction_Camera"])));
-                }
-                set {
-                    this.SetParentRow(value, this.Table.ParentRelations["BuildingInstruction_Camera"]);
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsrefIDNull() {
-                return this.IsNull(this.tableCamera.refIDColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetrefIDNull() {
-                this[this.tableCamera.refIDColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsfieldOfViewNull() {
-                return this.IsNull(this.tableCamera.fieldOfViewColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetfieldOfViewNull() {
-                this[this.tableCamera.fieldOfViewColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsdistanceNull() {
-                return this.IsNull(this.tableCamera.distanceColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetdistanceNull() {
-                this[this.tableCamera.distanceColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IstransformationNull() {
-                return this.IsNull(this.tableCamera.transformationColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SettransformationNull() {
-                this[this.tableCamera.transformationColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IscameraRefNull() {
-                return this.IsNull(this.tableCamera.cameraRefColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetcameraRefNull() {
-                this[this.tableCamera.cameraRefColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsStep_IdNull() {
-                return this.IsNull(this.tableCamera.Step_IdColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetStep_IdNull() {
-                this[this.tableCamera.Step_IdColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsCameras_IdNull() {
-                return this.IsNull(this.tableCamera.Cameras_IdColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetCameras_IdNull() {
-                this[this.tableCamera.Cameras_IdColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsBuildingInstruction_IdNull() {
-                return this.IsNull(this.tableCamera.BuildingInstruction_IdColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetBuildingInstruction_IdNull() {
-                this[this.tableCamera.BuildingInstruction_IdColumn] = global::System.Convert.DBNull;
-            }
-        }
-        
-        /// <summary>
-        ///Represents strongly named DataRow class.
-        ///</summary>
-        public partial class StepRow : global::System.Data.DataRow {
-            
-            private StepDataTable tableStep;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal StepRow(global::System.Data.DataRowBuilder rb) : 
-                    base(rb) {
-                this.tableStep = ((StepDataTable)(this.Table));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public string name {
-                get {
-                    try {
-                        return ((string)(this[this.tableStep.nameColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'name\' in table \'Step\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableStep.nameColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int Step_Id {
-                get {
-                    return ((int)(this[this.tableStep.Step_IdColumn]));
-                }
-                set {
-                    this[this.tableStep.Step_IdColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int Step_Id_0 {
-                get {
-                    try {
-                        return ((int)(this[this.tableStep.Step_Id_0Column]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'Step_Id_0\' in table \'Step\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableStep.Step_Id_0Column] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int BuildingInstruction_Id {
-                get {
-                    try {
-                        return ((int)(this[this.tableStep.BuildingInstruction_IdColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'BuildingInstruction_Id\' in table \'Step\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableStep.BuildingInstruction_IdColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRow StepRowParent {
-                get {
-                    return ((StepRow)(this.GetParentRow(this.Table.ParentRelations["Step_Step"])));
-                }
-                set {
-                    this.SetParentRow(value, this.Table.ParentRelations["Step_Step"]);
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionRow BuildingInstructionRow {
-                get {
-                    return ((BuildingInstructionRow)(this.GetParentRow(this.Table.ParentRelations["BuildingInstruction_Step"])));
-                }
-                set {
-                    this.SetParentRow(value, this.Table.ParentRelations["BuildingInstruction_Step"]);
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsnameNull() {
-                return this.IsNull(this.tableStep.nameColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetnameNull() {
-                this[this.tableStep.nameColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsStep_Id_0Null() {
-                return this.IsNull(this.tableStep.Step_Id_0Column);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetStep_Id_0Null() {
-                this[this.tableStep.Step_Id_0Column] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsBuildingInstruction_IdNull() {
-                return this.IsNull(this.tableStep.BuildingInstruction_IdColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetBuildingInstruction_IdNull() {
-                this[this.tableStep.BuildingInstruction_IdColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public PartRefRow[] GetPartRefRows() {
-                if ((this.Table.ChildRelations["Step_PartRef"] == null)) {
-                    return new PartRefRow[0];
-                }
-                else {
-                    return ((PartRefRow[])(base.GetChildRows(this.Table.ChildRelations["Step_PartRef"])));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public CameraRow[] GetCameraRows() {
-                if ((this.Table.ChildRelations["Step_Camera"] == null)) {
-                    return new CameraRow[0];
-                }
-                else {
-                    return ((CameraRow[])(base.GetChildRows(this.Table.ChildRelations["Step_Camera"])));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRow[] GetStepRows() {
-                if ((this.Table.ChildRelations["Step_Step"] == null)) {
-                    return new StepRow[0];
-                }
-                else {
-                    return ((StepRow[])(base.GetChildRows(this.Table.ChildRelations["Step_Step"])));
-                }
-            }
-        }
-        
-        /// <summary>
-        ///Represents strongly named DataRow class.
-        ///</summary>
-        public partial class PartRefRow : global::System.Data.DataRow {
-            
-            private PartRefDataTable tablePartRef;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal PartRefRow(global::System.Data.DataRowBuilder rb) : 
-                    base(rb) {
-                this.tablePartRef = ((PartRefDataTable)(this.Table));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public string partRef {
-                get {
-                    try {
-                        return ((string)(this[this.tablePartRef.partRefColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'partRef\' in table \'PartRef\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tablePartRef.partRefColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int Step_Id {
-                get {
-                    try {
-                        return ((int)(this[this.tablePartRef.Step_IdColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'Step_Id\' in table \'PartRef\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tablePartRef.Step_IdColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRow StepRow {
-                get {
-                    return ((StepRow)(this.GetParentRow(this.Table.ParentRelations["Step_PartRef"])));
-                }
-                set {
-                    this.SetParentRow(value, this.Table.ParentRelations["Step_PartRef"]);
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IspartRefNull() {
-                return this.IsNull(this.tablePartRef.partRefColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetpartRefNull() {
-                this[this.tablePartRef.partRefColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsStep_IdNull() {
-                return this.IsNull(this.tablePartRef.Step_IdColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetStep_IdNull() {
-                this[this.tablePartRef.Step_IdColumn] = global::System.Convert.DBNull;
-            }
-        }
-        
-        /// <summary>
-        ///Represents strongly named DataRow class.
-        ///</summary>
         public partial class LXFMLRow : global::System.Data.DataRow {
             
             private LXFMLDataTable tableLXFML;
@@ -7884,6 +6635,22 @@ namespace LXFPartListCreator {
                 }
                 set {
                     this[this.tableLXFML.versionMajorColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public string BuildingInstructions {
+                get {
+                    try {
+                        return ((string)(this[this.tableLXFML.BuildingInstructionsColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'BuildingInstructions\' in table \'LXFML\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tableLXFML.BuildingInstructionsColumn] = value;
                 }
             }
             
@@ -7940,6 +6707,18 @@ namespace LXFPartListCreator {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             public void SetversionMajorNull() {
                 this[this.tableLXFML.versionMajorColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public bool IsBuildingInstructionsNull() {
+                return this.IsNull(this.tableLXFML.BuildingInstructionsColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SetBuildingInstructionsNull() {
+                this[this.tableLXFML.BuildingInstructionsColumn] = global::System.Convert.DBNull;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -8018,17 +6797,6 @@ namespace LXFPartListCreator {
                 }
                 else {
                     return ((GroupSystemsRow[])(base.GetChildRows(this.Table.ChildRelations["LXFML_GroupSystems"])));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionsRow[] GetBuildingInstructionsRows() {
-                if ((this.Table.ChildRelations["LXFML_BuildingInstructions"] == null)) {
-                    return new BuildingInstructionsRow[0];
-                }
-                else {
-                    return ((BuildingInstructionsRow[])(base.GetChildRows(this.Table.ChildRelations["LXFML_BuildingInstructions"])));
                 }
             }
         }
@@ -8506,6 +7274,172 @@ namespace LXFPartListCreator {
                 else {
                     return ((CameraRow[])(base.GetChildRows(this.Table.ChildRelations["Cameras_Camera"])));
                 }
+            }
+        }
+        
+        /// <summary>
+        ///Represents strongly named DataRow class.
+        ///</summary>
+        public partial class CameraRow : global::System.Data.DataRow {
+            
+            private CameraDataTable tableCamera;
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            internal CameraRow(global::System.Data.DataRowBuilder rb) : 
+                    base(rb) {
+                this.tableCamera = ((CameraDataTable)(this.Table));
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public string refID {
+                get {
+                    try {
+                        return ((string)(this[this.tableCamera.refIDColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'refID\' in table \'Camera\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tableCamera.refIDColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public string fieldOfView {
+                get {
+                    try {
+                        return ((string)(this[this.tableCamera.fieldOfViewColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'fieldOfView\' in table \'Camera\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tableCamera.fieldOfViewColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public string distance {
+                get {
+                    try {
+                        return ((string)(this[this.tableCamera.distanceColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'distance\' in table \'Camera\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tableCamera.distanceColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public string transformation {
+                get {
+                    try {
+                        return ((string)(this[this.tableCamera.transformationColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'transformation\' in table \'Camera\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tableCamera.transformationColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public int Cameras_Id {
+                get {
+                    try {
+                        return ((int)(this[this.tableCamera.Cameras_IdColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'Cameras_Id\' in table \'Camera\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tableCamera.Cameras_IdColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public CamerasRow CamerasRow {
+                get {
+                    return ((CamerasRow)(this.GetParentRow(this.Table.ParentRelations["Cameras_Camera"])));
+                }
+                set {
+                    this.SetParentRow(value, this.Table.ParentRelations["Cameras_Camera"]);
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public bool IsrefIDNull() {
+                return this.IsNull(this.tableCamera.refIDColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SetrefIDNull() {
+                this[this.tableCamera.refIDColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public bool IsfieldOfViewNull() {
+                return this.IsNull(this.tableCamera.fieldOfViewColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SetfieldOfViewNull() {
+                this[this.tableCamera.fieldOfViewColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public bool IsdistanceNull() {
+                return this.IsNull(this.tableCamera.distanceColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SetdistanceNull() {
+                this[this.tableCamera.distanceColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public bool IstransformationNull() {
+                return this.IsNull(this.tableCamera.transformationColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SettransformationNull() {
+                this[this.tableCamera.transformationColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public bool IsCameras_IdNull() {
+                return this.IsNull(this.tableCamera.Cameras_IdColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SetCameras_IdNull() {
+                this[this.tableCamera.Cameras_IdColumn] = global::System.Convert.DBNull;
             }
         }
         
@@ -9630,17 +8564,12 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public string GroupSystem {
+            public int GroupSystems_Id {
                 get {
-                    try {
-                        return ((string)(this[this.tableGroupSystems.GroupSystemColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'GroupSystem\' in table \'GroupSystems\' is DBNull.", e);
-                    }
+                    return ((int)(this[this.tableGroupSystems.GroupSystems_IdColumn]));
                 }
                 set {
-                    this[this.tableGroupSystems.GroupSystemColumn] = value;
+                    this[this.tableGroupSystems.GroupSystems_IdColumn] = value;
                 }
             }
             
@@ -9673,18 +8602,6 @@ namespace LXFPartListCreator {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsGroupSystemNull() {
-                return this.IsNull(this.tableGroupSystems.GroupSystemColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetGroupSystemNull() {
-                this[this.tableGroupSystems.GroupSystemColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             public bool IsLXFML_IdNull() {
                 return this.IsNull(this.tableGroupSystems.LXFML_IdColumn);
             }
@@ -9694,80 +8611,15 @@ namespace LXFPartListCreator {
             public void SetLXFML_IdNull() {
                 this[this.tableGroupSystems.LXFML_IdColumn] = global::System.Convert.DBNull;
             }
-        }
-        
-        /// <summary>
-        ///Represents strongly named DataRow class.
-        ///</summary>
-        public partial class BuildingInstructionsRow : global::System.Data.DataRow {
-            
-            private BuildingInstructionsDataTable tableBuildingInstructions;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal BuildingInstructionsRow(global::System.Data.DataRowBuilder rb) : 
-                    base(rb) {
-                this.tableBuildingInstructions = ((BuildingInstructionsDataTable)(this.Table));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int BuildingInstructions_Id {
-                get {
-                    return ((int)(this[this.tableBuildingInstructions.BuildingInstructions_IdColumn]));
-                }
-                set {
-                    this[this.tableBuildingInstructions.BuildingInstructions_IdColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int LXFML_Id {
-                get {
-                    try {
-                        return ((int)(this[this.tableBuildingInstructions.LXFML_IdColumn]));
-                    }
-                    catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'LXFML_Id\' in table \'BuildingInstructions\' is DBNull.", e);
-                    }
-                }
-                set {
-                    this[this.tableBuildingInstructions.LXFML_IdColumn] = value;
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public LXFMLRow LXFMLRow {
-                get {
-                    return ((LXFMLRow)(this.GetParentRow(this.Table.ParentRelations["LXFML_BuildingInstructions"])));
-                }
-                set {
-                    this.SetParentRow(value, this.Table.ParentRelations["LXFML_BuildingInstructions"]);
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsLXFML_IdNull() {
-                return this.IsNull(this.tableBuildingInstructions.LXFML_IdColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetLXFML_IdNull() {
-                this[this.tableBuildingInstructions.LXFML_IdColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionRow[] GetBuildingInstructionRows() {
-                if ((this.Table.ChildRelations["BuildingInstructions_BuildingInstruction"] == null)) {
-                    return new BuildingInstructionRow[0];
+            public GroupSystemRow[] GetGroupSystemRows() {
+                if ((this.Table.ChildRelations["GroupSystems_GroupSystem"] == null)) {
+                    return new GroupSystemRow[0];
                 }
                 else {
-                    return ((BuildingInstructionRow[])(base.GetChildRows(this.Table.ChildRelations["BuildingInstructions_BuildingInstruction"])));
+                    return ((GroupSystemRow[])(base.GetChildRows(this.Table.ChildRelations["GroupSystems_GroupSystem"])));
                 }
             }
         }
@@ -9775,218 +8627,214 @@ namespace LXFPartListCreator {
         /// <summary>
         ///Represents strongly named DataRow class.
         ///</summary>
-        public partial class BuildingInstructionRow : global::System.Data.DataRow {
+        public partial class GroupSystemRow : global::System.Data.DataRow {
             
-            private BuildingInstructionDataTable tableBuildingInstruction;
+            private GroupSystemDataTable tableGroupSystem;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            internal BuildingInstructionRow(global::System.Data.DataRowBuilder rb) : 
+            internal GroupSystemRow(global::System.Data.DataRowBuilder rb) : 
                     base(rb) {
-                this.tableBuildingInstruction = ((BuildingInstructionDataTable)(this.Table));
+                this.tableGroupSystem = ((GroupSystemDataTable)(this.Table));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public string name {
+            public int GroupSystem_Id {
+                get {
+                    return ((int)(this[this.tableGroupSystem.GroupSystem_IdColumn]));
+                }
+                set {
+                    this[this.tableGroupSystem.GroupSystem_IdColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public int GroupSystems_Id {
                 get {
                     try {
-                        return ((string)(this[this.tableBuildingInstruction.nameColumn]));
+                        return ((int)(this[this.tableGroupSystem.GroupSystems_IdColumn]));
                     }
                     catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'name\' in table \'BuildingInstruction\' is DBNull.", e);
+                        throw new global::System.Data.StrongTypingException("The value for column \'GroupSystems_Id\' in table \'GroupSystem\' is DBNull.", e);
                     }
                 }
                 set {
-                    this[this.tableBuildingInstruction.nameColumn] = value;
+                    this[this.tableGroupSystem.GroupSystems_IdColumn] = value;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int BuildingInstruction_Id {
+            public GroupSystemsRow GroupSystemsRow {
                 get {
-                    return ((int)(this[this.tableBuildingInstruction.BuildingInstruction_IdColumn]));
+                    return ((GroupSystemsRow)(this.GetParentRow(this.Table.ParentRelations["GroupSystems_GroupSystem"])));
                 }
                 set {
-                    this[this.tableBuildingInstruction.BuildingInstruction_IdColumn] = value;
+                    this.SetParentRow(value, this.Table.ParentRelations["GroupSystems_GroupSystem"]);
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public int BuildingInstructions_Id {
+            public bool IsGroupSystems_IdNull() {
+                return this.IsNull(this.tableGroupSystem.GroupSystems_IdColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SetGroupSystems_IdNull() {
+                this[this.tableGroupSystem.GroupSystems_IdColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public GroupRow[] GetGroupRows() {
+                if ((this.Table.ChildRelations["GroupSystem_Group"] == null)) {
+                    return new GroupRow[0];
+                }
+                else {
+                    return ((GroupRow[])(base.GetChildRows(this.Table.ChildRelations["GroupSystem_Group"])));
+                }
+            }
+        }
+        
+        /// <summary>
+        ///Represents strongly named DataRow class.
+        ///</summary>
+        public partial class GroupRow : global::System.Data.DataRow {
+            
+            private GroupDataTable tableGroup;
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            internal GroupRow(global::System.Data.DataRowBuilder rb) : 
+                    base(rb) {
+                this.tableGroup = ((GroupDataTable)(this.Table));
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public string transformation {
                 get {
                     try {
-                        return ((int)(this[this.tableBuildingInstruction.BuildingInstructions_IdColumn]));
+                        return ((string)(this[this.tableGroup.transformationColumn]));
                     }
                     catch (global::System.InvalidCastException e) {
-                        throw new global::System.Data.StrongTypingException("The value for column \'BuildingInstructions_Id\' in table \'BuildingInstruction\' is " +
-                                "DBNull.", e);
+                        throw new global::System.Data.StrongTypingException("The value for column \'transformation\' in table \'Group\' is DBNull.", e);
                     }
                 }
                 set {
-                    this[this.tableBuildingInstruction.BuildingInstructions_IdColumn] = value;
+                    this[this.tableGroup.transformationColumn] = value;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionsRow BuildingInstructionsRow {
+            public string pivot {
                 get {
-                    return ((BuildingInstructionsRow)(this.GetParentRow(this.Table.ParentRelations["BuildingInstructions_BuildingInstruction"])));
+                    try {
+                        return ((string)(this[this.tableGroup.pivotColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'pivot\' in table \'Group\' is DBNull.", e);
+                    }
                 }
                 set {
-                    this.SetParentRow(value, this.Table.ParentRelations["BuildingInstructions_BuildingInstruction"]);
+                    this[this.tableGroup.pivotColumn] = value;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsnameNull() {
-                return this.IsNull(this.tableBuildingInstruction.nameColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetnameNull() {
-                this[this.tableBuildingInstruction.nameColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public bool IsBuildingInstructions_IdNull() {
-                return this.IsNull(this.tableBuildingInstruction.BuildingInstructions_IdColumn);
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public void SetBuildingInstructions_IdNull() {
-                this[this.tableBuildingInstruction.BuildingInstructions_IdColumn] = global::System.Convert.DBNull;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public CameraRow[] GetCameraRows() {
-                if ((this.Table.ChildRelations["BuildingInstruction_Camera"] == null)) {
-                    return new CameraRow[0];
-                }
-                else {
-                    return ((CameraRow[])(base.GetChildRows(this.Table.ChildRelations["BuildingInstruction_Camera"])));
-                }
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRow[] GetStepRows() {
-                if ((this.Table.ChildRelations["BuildingInstruction_Step"] == null)) {
-                    return new StepRow[0];
-                }
-                else {
-                    return ((StepRow[])(base.GetChildRows(this.Table.ChildRelations["BuildingInstruction_Step"])));
-                }
-            }
-        }
-        
-        /// <summary>
-        ///Row event argument class
-        ///</summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public class CameraRowChangeEvent : global::System.EventArgs {
-            
-            private CameraRow eventRow;
-            
-            private global::System.Data.DataRowAction eventAction;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public CameraRowChangeEvent(CameraRow row, global::System.Data.DataRowAction action) {
-                this.eventRow = row;
-                this.eventAction = action;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public CameraRow Row {
+            public string partRefs {
                 get {
-                    return this.eventRow;
+                    try {
+                        return ((string)(this[this.tableGroup.partRefsColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'partRefs\' in table \'Group\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tableGroup.partRefsColumn] = value;
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataRowAction Action {
+            public int GroupSystem_Id {
                 get {
-                    return this.eventAction;
+                    try {
+                        return ((int)(this[this.tableGroup.GroupSystem_IdColumn]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("The value for column \'GroupSystem_Id\' in table \'Group\' is DBNull.", e);
+                    }
+                }
+                set {
+                    this[this.tableGroup.GroupSystem_IdColumn] = value;
                 }
             }
-        }
-        
-        /// <summary>
-        ///Row event argument class
-        ///</summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public class StepRowChangeEvent : global::System.EventArgs {
-            
-            private StepRow eventRow;
-            
-            private global::System.Data.DataRowAction eventAction;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRowChangeEvent(StepRow row, global::System.Data.DataRowAction action) {
-                this.eventRow = row;
-                this.eventAction = action;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public StepRow Row {
+            public GroupSystemRow GroupSystemRow {
                 get {
-                    return this.eventRow;
+                    return ((GroupSystemRow)(this.GetParentRow(this.Table.ParentRelations["GroupSystem_Group"])));
+                }
+                set {
+                    this.SetParentRow(value, this.Table.ParentRelations["GroupSystem_Group"]);
                 }
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataRowAction Action {
-                get {
-                    return this.eventAction;
-                }
-            }
-        }
-        
-        /// <summary>
-        ///Row event argument class
-        ///</summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public class PartRefRowChangeEvent : global::System.EventArgs {
-            
-            private PartRefRow eventRow;
-            
-            private global::System.Data.DataRowAction eventAction;
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public PartRefRowChangeEvent(PartRefRow row, global::System.Data.DataRowAction action) {
-                this.eventRow = row;
-                this.eventAction = action;
+            public bool IstransformationNull() {
+                return this.IsNull(this.tableGroup.transformationColumn);
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public PartRefRow Row {
-                get {
-                    return this.eventRow;
-                }
+            public void SettransformationNull() {
+                this[this.tableGroup.transformationColumn] = global::System.Convert.DBNull;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public global::System.Data.DataRowAction Action {
-                get {
-                    return this.eventAction;
-                }
+            public bool IspivotNull() {
+                return this.IsNull(this.tableGroup.pivotColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SetpivotNull() {
+                this[this.tableGroup.pivotColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public bool IspartRefsNull() {
+                return this.IsNull(this.tableGroup.partRefsColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SetpartRefsNull() {
+                this[this.tableGroup.partRefsColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public bool IsGroupSystem_IdNull() {
+                return this.IsNull(this.tableGroup.GroupSystem_IdColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void SetGroupSystem_IdNull() {
+                this[this.tableGroup.GroupSystem_IdColumn] = global::System.Convert.DBNull;
             }
         }
         
@@ -10180,6 +9028,40 @@ namespace LXFPartListCreator {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             public CamerasRow Row {
+                get {
+                    return this.eventRow;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public global::System.Data.DataRowAction Action {
+                get {
+                    return this.eventAction;
+                }
+            }
+        }
+        
+        /// <summary>
+        ///Row event argument class
+        ///</summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+        public class CameraRowChangeEvent : global::System.EventArgs {
+            
+            private CameraRow eventRow;
+            
+            private global::System.Data.DataRowAction eventAction;
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public CameraRowChangeEvent(CameraRow row, global::System.Data.DataRowAction action) {
+                this.eventRow = row;
+                this.eventAction = action;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public CameraRow Row {
                 get {
                     return this.eventRow;
                 }
@@ -10538,22 +9420,22 @@ namespace LXFPartListCreator {
         ///Row event argument class
         ///</summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public class BuildingInstructionsRowChangeEvent : global::System.EventArgs {
+        public class GroupSystemRowChangeEvent : global::System.EventArgs {
             
-            private BuildingInstructionsRow eventRow;
+            private GroupSystemRow eventRow;
             
             private global::System.Data.DataRowAction eventAction;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionsRowChangeEvent(BuildingInstructionsRow row, global::System.Data.DataRowAction action) {
+            public GroupSystemRowChangeEvent(GroupSystemRow row, global::System.Data.DataRowAction action) {
                 this.eventRow = row;
                 this.eventAction = action;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionsRow Row {
+            public GroupSystemRow Row {
                 get {
                     return this.eventRow;
                 }
@@ -10572,22 +9454,22 @@ namespace LXFPartListCreator {
         ///Row event argument class
         ///</summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-        public class BuildingInstructionRowChangeEvent : global::System.EventArgs {
+        public class GroupRowChangeEvent : global::System.EventArgs {
             
-            private BuildingInstructionRow eventRow;
+            private GroupRow eventRow;
             
             private global::System.Data.DataRowAction eventAction;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionRowChangeEvent(BuildingInstructionRow row, global::System.Data.DataRowAction action) {
+            public GroupRowChangeEvent(GroupRow row, global::System.Data.DataRowAction action) {
                 this.eventRow = row;
                 this.eventAction = action;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public BuildingInstructionRow Row {
+            public GroupRow Row {
                 get {
                     return this.eventRow;
                 }

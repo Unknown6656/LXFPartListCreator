@@ -50,12 +50,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="lfxml.Designer.cs">
+    <Compile Include="LXFML.cs" />
+    <Compile Include="lxfml.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>lfxml.xsd</DependentUpon>
+      <DependentUpon>lxfml.xsd</DependentUpon>
     </Compile>
-    <Compile Include="LXFML.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -66,16 +66,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="lfxml.xsc">
-      <DependentUpon>lfxml.xsd</DependentUpon>
+    <None Include="lxfml.xsc">
+      <DependentUpon>lxfml.xsd</DependentUpon>
     </None>
-    <None Include="lfxml.xsd">
+    <None Include="lxfml.xsd">
       <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>lfxml.Designer.cs</LastGenOutput>
+      <LastGenOutput>lxfml.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </None>
-    <None Include="lfxml.xss">
-      <DependentUpon>lfxml.xsd</DependentUpon>
+    <None Include="lxfml.xss">
+      <DependentUpon>lxfml.xsd</DependentUpon>
     </None>
   </ItemGroup>
   <ItemGroup>

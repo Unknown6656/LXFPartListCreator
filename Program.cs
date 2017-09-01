@@ -16,6 +16,8 @@ namespace LXFPartListCreator
     using static ConsoleColor;
     using static Console;
 
+    using Properties;
+
     public static class Program
     {
         public const string PATH_LXFML = "IMAGE100.LXFML";
@@ -65,7 +67,7 @@ namespace LXFPartListCreator
 
                     using (FileStream fs = nfo.OpenWrite())
                     using (StreamWriter wr = new StreamWriter(fs, Encoding.UTF8))
-                        wr.Write(GenerateHTML(lxfml, thumbnail));
+                        wr.Write(GenerateHTML(lxfml, thumbnail, opt));
 
                     if (hasopt("open-after-success", out _))
                         Process.Start(@out);
@@ -82,6 +84,20 @@ namespace LXFPartListCreator
                 WriteLine("Press any key to exit ...");
                 ReadKey(true);
             }
+        }
+
+        private static string GenerateHTML(LXFML lxfml, string thumbnail, Dictionary<string, string> opt)
+        {
+
+
+
+
+            return Resources.template.DFormat(new Dictionary<string, string>
+            {
+                ["model_path"] = opt["in"],
+                ["model_name"] = opt["in"], // TODO
+                ["thumbnail"] = thumbnail,
+            });
         }
 
         private static Dictionary<string, string> GetOptions(string[] argv)
@@ -123,11 +139,6 @@ namespace LXFPartListCreator
             sb = sb.Replace("§§", "§");
 
             return String.Format(sb.ToString(), dic.OrderBy(x => kti[x.Key]).Select(x => x.Value).ToArray());
-        }
-
-        private static string GenerateHTML(LXFML lxfml, string thumbnail)
-        {
-            throw new NotImplementedException();
         }
 
         private static bool match(this string s, string pat, out Match m, RegexOptions opt = RegexOptions.Compiled | RegexOptions.IgnoreCase) =>
