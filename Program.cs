@@ -26,8 +26,6 @@ namespace LXFPartListCreator
 
         public static void Main(string[] argv)
         {
-            Directory.SetCurrentDirectory(new FileInfo(typeof(Program).Assembly.Location).Directory.FullName);
-
             Dictionary<string, string> opt = GetOptions(argv);
             bool hasopt(string n, out string a)
             {
@@ -38,6 +36,28 @@ namespace LXFPartListCreator
 
                 return a != null;
             }
+
+            if (!argv.Any() || hasopt("help", out _))
+            {
+                WriteLine(@"
++---------------------------------------------------------+
+|        LXF Part List Creator Tool by Unknown6665        |
++---------------------------------------------------------+
+
+Usage:
+    --in=...                Input .LXF file
+    --out=...               Output .HTML file
+    --ignore-working-dir    Runs the tool from the assembly's location
+                            instead of from the working directory
+    -- open-after-success   Opens the generated .HTML file after a
+                            successful file generation
+");
+
+                return;
+            }
+
+            if (hasopt("ignore-working-dir", out _))
+                Directory.SetCurrentDirectory(new FileInfo(typeof(Program).Assembly.Location).Directory.FullName);
             
             if (hasopt("in", out string @in) && hasopt("out", out string @out))
                 try
