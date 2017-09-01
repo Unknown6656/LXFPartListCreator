@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="NewDataSet" xmlns="" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xs:element name="Camera">
+    <xs:complexType>
+      <xs:attribute name="refID" type="xs:string" />
+      <xs:attribute name="fieldOfView" type="xs:string" />
+      <xs:attribute name="distance" type="xs:string" />
+      <xs:attribute name="transformation" type="xs:string" />
+      <xs:attribute name="cameraRef" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Step">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="PartRef" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="partRef" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element ref="Camera" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="Step" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="LXFML">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Meta" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Application" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" />
+                  <xs:attribute name="versionMajor" type="xs:string" />
+                  <xs:attribute name="versionMinor" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Brand" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="BrickSet" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="version" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Cameras" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="Camera" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Bricks" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Brick" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Part" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="Bone" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:attribute name="refID" type="xs:string" />
+                              <xs:attribute name="transformation" type="xs:string" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="refID" type="xs:string" />
+                        <xs:attribute name="designID" type="xs:string" />
+                        <xs:attribute name="materials" type="xs:string" />
+                        <xs:attribute name="decoration" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="refID" type="xs:string" />
+                  <xs:attribute name="designID" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="cameraRef" type="xs:string" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="RigidSystems" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="RigidSystem" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Rigid" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="refID" type="xs:string" />
+                        <xs:attribute name="transformation" type="xs:string" />
+                        <xs:attribute name="boneRefs" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="Joint" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element name="RigidRef" minOccurs="0" maxOccurs="unbounded">
+                            <xs:complexType>
+                              <xs:attribute name="rigidRef" type="xs:string" />
+                              <xs:attribute name="a" type="xs:string" />
+                              <xs:attribute name="z" type="xs:string" />
+                              <xs:attribute name="t" type="xs:string" />
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="type" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="GroupSystems" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="GroupSystem" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="BuildingInstructions" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="BuildingInstruction" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element ref="Camera" minOccurs="0" maxOccurs="unbounded" />
+                    <xs:element ref="Step" minOccurs="0" maxOccurs="unbounded" />
+                  </xs:sequence>
+                  <xs:attribute name="name" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="versionMajor" type="xs:string" />
+      <xs:attribute name="versionMinor" type="xs:string" />
+      <xs:attribute name="name" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="NewDataSet" msdata:IsDataSet="true" msdata:UseCurrentLocale="true">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="Camera" />
+        <xs:element ref="Step" />
+        <xs:element ref="LXFML" />
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
