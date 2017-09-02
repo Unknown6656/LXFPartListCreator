@@ -4,12 +4,80 @@
     <head>
         <meta charset="utf-8" />
         <title>§model_name§ - Part List</title>
+        <style>
+            body {
+                font-family: Ubuntu, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                align-content: center;
+                text-align: center;
+            }
+
+            div#content {
+                background-color: #cdf;
+                border: 1px solid #888;
+                align-content: center;
+                border-radius: 20px;
+                text-align: center;
+                margin-right: auto;
+                margin-left: auto;
+                display: block;
+                padding: 10px;
+                width: 800px;
+            }
+
+            div#content > * {
+                align-content: initial;
+                text-align: left;
+            }
+
+            table#meta {
+                font-family: 'Ubuntu Mono', monospace;
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            table#meta th,
+            table#meta td {
+                border-bottom: 1px solid #999;
+                padding: 3px;
+            }
+
+            table#meta tr:hover {
+                background-color: #abd;
+            }
+        </style>
     </head>
     <body>
-        <img alt="Thumbnail image" src="§thumbnail§"/>
-        <pre>
-Path:       §model_path§
-Model Name: §model_name§
-</pre>
+        <div id="content">
+            <img alt="Thumbnail image" src="§thumbnail§" />
+            <table border="0" id="meta">
+                <tr>
+                    <td align="right">Path</td>
+                    <td align="left">§model_path§</td>
+                </tr>
+                <tr>
+                    <td align="right">Model Name</td>
+                    <td align="left">§model_name§</td>
+                </tr>
+                <tr>
+                    <td align="right">LXFML Version</td>
+                    <td align="left">§model_version§</td>
+                </tr>
+                <tr>
+                    <td align="right">XML Tool Version</td>
+                    <td align="left">§tool_version§</td>
+                </tr>
+                <tr>
+                    <td align="right">Number of Bricks</td>
+                    <td align="left">§brick_count§</td>
+                </tr>
+            </table>
+            <br />
+            <br />
+            <hr />
+            <br />
+            <ol>
+                §bricks§
+            </ol>
+        </div>
     </body>
 </html>

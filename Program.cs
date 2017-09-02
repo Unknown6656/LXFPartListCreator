@@ -20,12 +20,14 @@ namespace LXFPartListCreator
 
     public static class Program
     {
+        public const string PATH_CACHE = "part-cache";
         public const string PATH_LXFML = "IMAGE100.LXFML";
         public const string PATH_PNG = "IMAGE100.PNG";
 
 
         public static void Main(string[] argv)
         {
+            string currdir = new FileInfo(typeof(Program).Assembly.Location).Directory.FullName;
             Dictionary<string, string> opt = GetOptions(argv);
             bool hasopt(string n, out string a)
             {
@@ -39,7 +41,7 @@ namespace LXFPartListCreator
 
             if (!argv.Any() || hasopt("help", out _))
             {
-                WriteLine(@"
+                WriteLine($@"
 +---------------------------------------------------------+
 |        LXF Part List Creator Tool by Unknown6665        |
 +---------------------------------------------------------+
@@ -51,51 +53,61 @@ Usage:
                             instead of from the working directory
     -- open-after-success   Opens the generated .HTML file after a
                             successful file generation
+    --cache=...             The lego part cache directory. default:
+                            '{currdir}/{PATH_CACHE}'
 ");
 
                 return;
             }
 
             if (hasopt("ignore-working-dir", out _))
-                Directory.SetCurrentDirectory(new FileInfo(typeof(Program).Assembly.Location).Directory.FullName);
-            
+                Directory.SetCurrentDirectory(currdir);
+
+            if (!hasopt("cache", out string cache))
+                cache = $"{currdir}/{PATH_CACHE}";
+
             if (hasopt("in", out string @in) && hasopt("out", out string @out))
-                try
-                {
-                    string thumbnail;
-                    LXFML lxfml;
-
-                    using (ZipArchive lxf = ZipFile.Open(@in, ZipArchiveMode.Read))
-                    using (Stream lxfms = lxf.GetEntry(PATH_LXFML).Open())
-                    using (Stream pngms = lxf.GetEntry(PATH_PNG).Open())
-                    using (Bitmap png = Image.FromStream(pngms) as Bitmap)
-                    using (MemoryStream ms = new MemoryStream())
+                using (BrickDatabase brickdb = new BrickDatabase(cache))
+                    try
                     {
-                        XmlSerializer xmlser = new XmlSerializer(typeof(LXFML));
+                        string thumbnail;
+                        LXFML lxfml;
 
-                        lxfml = xmlser.Deserialize(lxfms) as LXFML;
+                        using (ZipArchive lxf = ZipFile.Open(@in, ZipArchiveMode.Read))
+                        using (Stream lxfms = lxf.GetEntry(PATH_LXFML).Open())
+                        using (Stream pngms = lxf.GetEntry(PATH_PNG).Open())
+                        using (Bitmap png = Image.FromStream(pngms) as Bitmap)
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            XmlSerializer xmlser = new XmlSerializer(typeof(LXFML));
 
-                        png.Save(ms, ImageFormat.Png);
+                            lxfml = xmlser.Deserialize(lxfms) as LXFML;
 
-                        thumbnail = $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
+                            png.Save(ms, ImageFormat.Png);
+
+                            thumbnail = $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
+                        }
+
+                        FileInfo nfo = new FileInfo(@out);
+
+                        if (nfo.Exists)
+                            nfo.Delete();
+
+                        using (FileStream fs = nfo.OpenWrite())
+                        using (StreamWriter wr = new StreamWriter(fs, Encoding.UTF8))
+                            wr.Write(GenerateHTML(lxfml, thumbnail, opt, brickdb));
+
+                        if (hasopt("open-after-success", out _))
+                            Process.Start(@out);
                     }
-
-                    FileInfo nfo = new FileInfo(@out);
-
-                    if (nfo.Exists)
-                        nfo.Delete();
-
-                    using (FileStream fs = nfo.OpenWrite())
-                    using (StreamWriter wr = new StreamWriter(fs, Encoding.UTF8))
-                        wr.Write(GenerateHTML(lxfml, thumbnail, opt));
-
-                    if (hasopt("open-after-success", out _))
-                        Process.Start(@out);
-                }
-                catch (Exception ex)
-                {
-                    ex.Err();
-                }
+                    catch (Exception ex)
+                    {
+                        ex.Err();
+                    }
+                    finally
+                    {
+                        brickdb.Save();
+                    }
             else
                 "No input and/or output file path has been provided.".Err();
 
@@ -106,17 +118,42 @@ Usage:
             }
         }
 
-        private static string GenerateHTML(LXFML lxfml, string thumbnail, Dictionary<string, string> opt)
+        private static string GenerateHTML(LXFML lxfml, string thumbnail, Dictionary<string, string> opt, BrickDatabase db)
         {
+            StringBuilder sb = new StringBuilder();
 
+            var partlist = from brick in lxfml.Bricks.Brick
+                           let part = brick.Part
+                           group brick by (id: part.designID, mat: part.materialsText, dec: part.decorationText) into g
+                           let count = g.Count()
+                           orderby g.Key.id ascending
+                           orderby count descending
+                           select new
+                           {
+                               Count = count,
+                               ID = g.Key.id,
+                               Matr = g.Key.mat,
+                               Decor = g.Key.dec,
+                               Bricks = g as IEnumerable<LXFMLBricksBrick>
+                           };
 
-
-
-            return Resources.template.DFormat(new Dictionary<string, string>
+            foreach (var parts in partlist)
             {
+                BrickInfo part = db[parts.ID];
+
+                sb.AppendLine($"<li>{parts.Count}x '{part.Name}' (Part ID: {part.PartID}, Design ID: {parts.ID}, Materials: '{parts.Matr}', Decoration: '{parts.Decor}')</li>");
+            }
+
+            return Resources.template.DFormat(new Dictionary<string, object>
+            {
+                ["timestamp"] = DateTime.Now.ToString("dd. MMM yyyy - HH:mm:ss.ffffff"),
                 ["model_path"] = opt["in"],
-                ["model_name"] = opt["in"], // TODO
+                ["model_name"] = lxfml.name,
+                ["model_version"] = $"{lxfml.versionMajor}.{lxfml.versionMinor}",
+                ["tool_version"] = $"{lxfml.Meta}",
                 ["thumbnail"] = thumbnail,
+                ["bricks"] = sb.ToString(),
+                ["brick_count"] = lxfml.Bricks.Brick.Length,
             });
         }
 
@@ -138,7 +175,7 @@ Usage:
             return dic;
         }
 
-        private static string DFormat(this string formatstring, Dictionary<string, string> dic)
+        internal static string DFormat(this string formatstring, Dictionary<string, object> dic)
         {
             Dictionary<string, int> kti = new Dictionary<string, int>();
             StringBuilder sb = new StringBuilder(formatstring);
@@ -158,13 +195,13 @@ Usage:
 
             sb = sb.Replace("§§", "§");
 
-            return String.Format(sb.ToString(), dic.OrderBy(x => kti[x.Key]).Select(x => x.Value).ToArray());
+            return string.Format(sb.ToString(), dic.OrderBy(x => kti[x.Key]).Select(x => x.Value).ToArray());
         }
 
-        private static bool match(this string s, string pat, out Match m, RegexOptions opt = RegexOptions.Compiled | RegexOptions.IgnoreCase) =>
+        internal static bool match(this string s, string pat, out Match m, RegexOptions opt = RegexOptions.Compiled | RegexOptions.IgnoreCase) =>
             (m = Regex.Match(s, pat, opt)).Success;
 
-        private static void Err(this string str)
+        internal static void Err(this string str)
         {
             ConsoleColor clr = ForegroundColor;
 
@@ -173,7 +210,7 @@ Usage:
             ForegroundColor = clr;
         }
 
-        private static void Err(this Exception err)
+        internal static void Err(this Exception err)
         {
             StringBuilder sb = new StringBuilder();
 

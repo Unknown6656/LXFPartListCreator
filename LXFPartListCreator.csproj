@@ -37,6 +37,9 @@
     <StartupObject>LXFPartListCreator.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CsQuery">
+      <HintPath>..\..\CsQuery\source\CsQuery\bin\Debug\CsQuery.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -50,6 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BrickDatabase.cs" />
     <Compile Include="LXFML.cs" />
     <Compile Include="lxfml.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -77,6 +81,7 @@
     <None Include="lxfml.xss">
       <DependentUpon>lxfml.xsd</DependentUpon>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="template.html" />
