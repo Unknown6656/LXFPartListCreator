@@ -17,6 +17,7 @@ namespace LXFPartListCreator
     using static Console;
 
     using Properties;
+    using NSass;
 
     public static class Program
     {
@@ -49,12 +50,12 @@ namespace LXFPartListCreator
 Usage:
     --in=...                Input .LXF file
     --out=...               Output .HTML file
-    --ignore-working-dir    Runs the tool from the assembly's location
-                            instead of from the working directory
-    -- open-after-success   Opens the generated .HTML file after a
-                            successful file generation
+    --ignore-working-dir    Runs the tool from the assembly's location instead of from the working directory
+    -- open-after-success   Opens the generated .HTML file after a successful file generation
     --cache=...             The lego part cache directory. default:
                             '{currdir}/{PATH_CACHE}'
+    --delete-cache          Deletes the cache index before generating the .HTML file
+    --delete-image-cache    Deletes the cached images before generating the .HTML file
 ");
 
                 return;
@@ -67,11 +68,17 @@ Usage:
                 cache = $"{currdir}/{PATH_CACHE}";
 
             if (hasopt("in", out string @in) && hasopt("out", out string @out))
-                using (BrickDatabase brickdb = new BrickDatabase(cache))
+                using (LEGODatabase db = new BricksetDatabase(cache))
                     try
                     {
                         string thumbnail;
                         LXFML lxfml;
+
+                        if (hasopt("--delete-cache", out _))
+                            db.ClearIndex();
+
+                        if (hasopt("--delete-image-cache", out _))
+                            db.ClearImages();
 
                         using (ZipArchive lxf = ZipFile.Open(@in, ZipArchiveMode.Read))
                         using (Stream lxfms = lxf.GetEntry(PATH_LXFML).Open())
@@ -95,7 +102,7 @@ Usage:
 
                         using (FileStream fs = nfo.OpenWrite())
                         using (StreamWriter wr = new StreamWriter(fs, Encoding.UTF8))
-                            wr.Write(GenerateHTML(lxfml, thumbnail, opt, brickdb));
+                            wr.Write(GenerateHTML(lxfml, thumbnail, opt, db));
 
                         if (hasopt("open-after-success", out _))
                             Process.Start(@out);
@@ -106,7 +113,7 @@ Usage:
                     }
                     finally
                     {
-                        brickdb.Save();
+                        db.Save();
                     }
             else
                 "No input and/or output file path has been provided.".Err();
@@ -118,34 +125,83 @@ Usage:
             }
         }
 
-        private static string GenerateHTML(LXFML lxfml, string thumbnail, Dictionary<string, string> opt, BrickDatabase db)
+        private static string GenerateHTML(LXFML lxfml, string thumbnail, Dictionary<string, string> opt, LEGODatabase db)
         {
             StringBuilder sb = new StringBuilder();
 
-            var partlist = from brick in lxfml.Bricks.Brick
-                           let part = brick.Part
-                           group brick by (id: part.designID, mat: part.materialsText, dec: part.decorationText) into g
-                           let count = g.Count()
-                           orderby g.Key.id ascending
-                           orderby count descending
-                           select new
-                           {
-                               Count = count,
-                               ID = g.Key.id,
-                               Matr = g.Key.mat,
-                               Decor = g.Key.dec,
-                               Bricks = g as IEnumerable<LXFMLBricksBrick>
-                           };
+            var partlist = (from brick in lxfml.Bricks.Brick
+                            let part = brick.Part
+                            from mat in part?.materials ?? new int[0]
+                            from dec in part?.decoration ?? new int[0]
+                            where mat != 0
+                            group brick by (id: part.designID, mat: mat, dec: dec) into g
+                            let count = g.Count()
+                            orderby g.Key.id ascending
+                            orderby count descending
+                            select new
+                            {
+                                Count = count,
+                                ID = g.Key.id,
+                                Matr = g.Key.mat,
+                                Decor = g.Key.dec,
+                                Bricks = g as IEnumerable<LXFMLBricksBrick>
+                            }).ToArray();
+            float total = 0;
 
-            foreach (var parts in partlist)
+            foreach (var parts in partlist.Take(2))
             {
                 BrickInfo part = db[parts.ID];
+                BrickVariation bvar1 = part.Variations.FirstOrDefault(v => v.ColorID == parts.Matr || v.PartID == parts.ID);
+                BrickVariation bvar2 = bvar1 ?? part.Variations.FirstOrDefault();
+                ColorInfo color = db.GetColor(bvar1?.ColorID ?? parts.Matr) ?? db.GetColor(bvar2?.ColorID ?? 0);
+                string rgbclr = color?.RGB ?? "transparent";
+                float pprice = bvar2?.PriceAvg ?? float.NaN;
+                float tprice = parts.Count * pprice;
 
-                sb.AppendLine($"<li>{parts.Count}x '{part.Name}' (Part ID: {part.PartID}, Design ID: {parts.ID}, Materials: '{parts.Matr}', Decoration: '{parts.Decor}')</li>");
+                sb.Append(@"
+<li>
+    <table border=""0"" width=""100%"">
+        <tr width=""100%"">
+            <td>")
+                  .Append(sel(
+                      () => $@"<div class=""img"" count=""{parts.Count}"" style=""background-image: url('{db.GetImageByDesignID(bvar1.PartID)}');""/>",
+                      () => $@"<div class=""img invalid"" count=""{parts.Count}"" style=""background-image: url('{db.GetImageByDesignID(bvar2.PartID)}'); box-shadow: inset 0px 0px 64px 64px {rgbclr}, 0px 0px 4px 4px {rgbclr};""/>",
+                      () => $@"<div class=""img invalid"" count=""{parts.Count}""/>"
+                  ))
+                  .Append($@"
+                    </td>
+                    <td>
+                        <h2>{part.Name} &nbsp; - &nbsp; {color?.Name}</h2>
+                        <span class=""mono"">
+                            ID: p.{bvar2?.PartID}/d.{part.DesignID}
+                        </span>
+")
+                  .Append(sel(
+                      () => "",
+                      () => "",
+                      () => ""
+                  ))
+                  .Append($@"
+            </td>
+            <td valign=""bottom"" align=""right"" class=""mono"">{parts.Count} x {pprice:F2}€ = {tprice:F2}€</td>
+        </tr>
+    </table>
+</li>");
+                total += tprice;
+
+                string sel(Func<string> f1, Func<string> f2, Func<string> f3) => (bvar1 != null ? f1 : bvar2 != null ? f2 : f3)();
             }
+
+            string css;
+
+            using (MemoryStream ms = new MemoryStream(Resources.style))
+            using (StreamReader sr = new StreamReader(ms, Encoding.UTF8))
+                css = new SassCompiler().Compile(sr.ReadToEnd(), OutputStyle.Compressed, true);
 
             return Resources.template.DFormat(new Dictionary<string, object>
             {
+                ["model_price"] = $"{total:F2}€",
+                ["style"] = css,
                 ["timestamp"] = DateTime.Now.ToString("dd. MMM yyyy - HH:mm:ss.ffffff"),
                 ["model_path"] = opt["in"],
                 ["model_name"] = lxfml.name,

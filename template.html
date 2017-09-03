@@ -4,47 +4,7 @@
     <head>
         <meta charset="utf-8" />
         <title>§model_name§ - Part List</title>
-        <style>
-            body {
-                font-family: Ubuntu, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                align-content: center;
-                text-align: center;
-            }
-
-            div#content {
-                background-color: #cdf;
-                border: 1px solid #888;
-                align-content: center;
-                border-radius: 20px;
-                text-align: center;
-                margin-right: auto;
-                margin-left: auto;
-                display: block;
-                padding: 10px;
-                width: 800px;
-            }
-
-            div#content > * {
-                align-content: initial;
-                text-align: left;
-            }
-
-            table#meta {
-                font-family: 'Ubuntu Mono', monospace;
-                border-collapse: collapse;
-                width: 100%;
-            }
-
-            table#meta th,
-            table#meta td {
-                border-bottom: 1px solid #999;
-                padding: 3px;
-            }
-
-            table#meta tr:hover {
-                background-color: #abd;
-            }
-        </style>
+        <style>§style§</style>
     </head>
     <body>
         <div id="content">
@@ -75,9 +35,10 @@
             <br />
             <hr />
             <br />
-            <ol>
+            <ul id="list">
                 §bricks§
-            </ol>
+            </ul>
+            <span class="price mono">§model_price§</span>
         </div>
     </body>
 </html>

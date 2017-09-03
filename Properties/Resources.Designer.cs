@@ -61,17 +61,33 @@ namespace LXFPartListCreator.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] style {
+            get {
+                object obj = ResourceManager.GetObject("style", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;!DOCTYPE html&gt;
         ///
         ///&lt;html lang=&quot;en&quot; xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt;
         ///    &lt;head&gt;
         ///        &lt;meta charset=&quot;utf-8&quot; /&gt;
         ///        &lt;title&gt;§model_name§ - Part List&lt;/title&gt;
+        ///        &lt;style&gt;§style§&lt;/style&gt;
         ///    &lt;/head&gt;
         ///    &lt;body&gt;
-        ///
-        ///    &lt;/body&gt;
-        ///&lt;/html&gt;.
+        ///        &lt;div id=&quot;content&quot;&gt;
+        ///            &lt;img alt=&quot;Thumbnail image&quot; src=&quot;§thumbnail§&quot; /&gt;
+        ///            &lt;table border=&quot;0&quot; id=&quot;meta&quot;&gt;
+        ///                &lt;tr&gt;
+        ///                    &lt;td align=&quot;right&quot;&gt;Path&lt;/td&gt;
+        ///                    &lt;td align=&quot;left&quot;&gt;§model_path§&lt;/td&gt;
+        ///                &lt;/tr&gt;
+        ///      [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string template {
             get {

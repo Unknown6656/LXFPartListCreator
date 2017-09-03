@@ -157,13 +157,33 @@ namespace LXFPartListCreator
         public string materialsText
         {
             get => string.Join(",", materials ?? new int[0]);
-            set => materials = value.Split(',').Select(int.Parse).ToArray();
+            set
+            {
+                try
+                {
+                    materials = value.Split(',').Select(int.Parse).ToArray();
+                }
+                catch
+                {
+                    materials = new int[0];
+                }
+            }
         }
         [XmlAttribute(nameof(decoration))]
         public string decorationText
         {
             get => string.Join(",", decoration ?? new int[0]);
-            set => decoration = value.Split(',').Select(int.Parse).ToArray();
+            set
+            {
+                try
+                {
+                    decoration = value.Split(',').Select(int.Parse).ToArray();
+                }
+                catch
+                {
+                    decoration = new int[0];
+                }
+            }
         }
     }
 
@@ -178,7 +198,17 @@ namespace LXFPartListCreator
         public string transformationText
         {
             get => string.Join(",", transformation ?? new double[0]);
-            set => transformation = value.Split(',').Select(double.Parse).ToArray();
+            set
+            {
+                try
+                {
+                    transformation = value.Split(',').Select(double.Parse).ToArray();
+                }
+                catch
+                {
+                    transformation = new double[0];
+                }
+            }
         }
     }
 

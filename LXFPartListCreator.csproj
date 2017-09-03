@@ -40,6 +40,9 @@
     <Reference Include="CsQuery">
       <HintPath>..\..\CsQuery\source\CsQuery\bin\Debug\CsQuery.dll</HintPath>
     </Reference>
+    <Reference Include="NSass.Core, Version=0.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NSass.Core.0.0.3.0\lib\net40\NSass.Core.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -53,7 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BrickDatabase.cs" />
+    <Compile Include="LEGODatabase.cs" />
     <Compile Include="LXFML.cs" />
     <Compile Include="lxfml.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -82,8 +85,15 @@
       <DependentUpon>lxfml.xsd</DependentUpon>
     </None>
     <None Include="packages.config" />
+    <None Include="style.scss" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="NSass.Wrapper\NSass.Wrapper.x64.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NSass.Wrapper\NSass.Wrapper.x86.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="template.html" />
   </ItemGroup>
   <ItemGroup>
