@@ -65,11 +65,12 @@ ul#list {
 
         div.img[count] {
             background-color: transparent;
+            background-size: contain;
             border-radius: 10px;
             position: relative;
             display: block;
-            height: 64px;
-            width: 64px;
+            height: 72px;
+            width: 72px;
         }
 
         div.img[count]::after {

@@ -11,13 +11,14 @@ using System.Text;
 using System.IO;
 using System;
 
+using NSass;
+
 namespace LXFPartListCreator
 {
     using static ConsoleColor;
     using static Console;
 
     using Properties;
-    using NSass;
 
     public static class Program
     {
@@ -40,23 +41,36 @@ namespace LXFPartListCreator
                 return a != null;
             }
 
-            if (!argv.Any() || hasopt("help", out _))
+            if (argv.All(string.IsNullOrWhiteSpace) || !argv.Any() || hasopt("help", out _))
             {
+                int year = DateTime.Now.Year;
+                var clr = ForegroundColor;
+
+                ForegroundColor = Yellow;
                 WriteLine($@"
-+---------------------------------------------------------+
-|        LXF Part List Creator Tool by Unknown6665        |
-+---------------------------------------------------------+
+_____________________________________________________________________________________________________________
+
+                                LXF Part List Creator Tool by Unknown6665
+_____________________________________________________________________________________________________________
 
 Usage:
     --in=...                Input .LXF file
     --out=...               Output .HTML file
     --ignore-working-dir    Runs the tool from the assembly's location instead of from the working directory
     -- open-after-success   Opens the generated .HTML file after a successful file generation
-    --cache=...             The lego part cache directory. default:
+    --cache=...             The LEGO part cache directory. default:
                             '{currdir}/{PATH_CACHE}'
     --delete-cache          Deletes the cache index before generating the .HTML file
     --delete-image-cache    Deletes the cached images before generating the .HTML file
+
+_____________________________________________________________________________________________________________
+
+                                  Copyright © 2017-{year}, Unknown6656
+  
+  LEGO, LXF, LXFML, LDD and the Brick and Knob configurations are trademarks of the LEGO Group of Companies. 
+                                    Copyright © {year} The LEGO Group.
 ");
+                ForegroundColor = clr;
 
                 return;
             }
@@ -68,11 +82,14 @@ Usage:
                 cache = $"{currdir}/{PATH_CACHE}";
 
             if (hasopt("in", out string @in) && hasopt("out", out string @out))
-                using (LEGODatabase db = new BricksetDatabase(cache))
+                using (LEGODatabaseManager db = new LEGODatabaseManager(cache))
                     try
                     {
                         string thumbnail;
                         LXFML lxfml;
+
+                        db.AddProvider<BricksetDotCom>();
+                        // TODO : add other services/backup sites [?]
 
                         if (hasopt("--delete-cache", out _))
                             db.ClearIndex();
@@ -125,7 +142,7 @@ Usage:
             }
         }
 
-        private static string GenerateHTML(LXFML lxfml, string thumbnail, Dictionary<string, string> opt, LEGODatabase db)
+        private static string GenerateHTML(LXFML lxfml, string thumbnail, Dictionary<string, string> opt, LEGODatabaseManager db)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -148,7 +165,7 @@ Usage:
                             }).ToArray();
             float total = 0;
 
-            foreach (var parts in partlist.Take(2))
+            foreach (var parts in partlist.Take(20))
             {
                 BrickInfo part = db[parts.ID];
                 BrickVariation bvar1 = part.Variations.FirstOrDefault(v => v.ColorID == parts.Matr || v.PartID == parts.ID);
@@ -164,8 +181,8 @@ Usage:
         <tr width=""100%"">
             <td>")
                   .Append(sel(
-                      () => $@"<div class=""img"" count=""{parts.Count}"" style=""background-image: url('{db.GetImageByDesignID(bvar1.PartID)}');""/>",
-                      () => $@"<div class=""img invalid"" count=""{parts.Count}"" style=""background-image: url('{db.GetImageByDesignID(bvar2.PartID)}'); box-shadow: inset 0px 0px 64px 64px {rgbclr}, 0px 0px 4px 4px {rgbclr};""/>",
+                      () => $@"<div class=""img"" count=""{parts.Count}"" style=""background-image: url('{db.GetImageByPartID(bvar1.PartID)}');""/>",
+                      () => $@"<div class=""img invalid"" count=""{parts.Count}"" style=""background-image: url('{db.GetImageByPartID(bvar2.PartID)}'); box-shadow: inset 0px 0px 72px 72px {rgbclr}, 0px 0px 4px 4px {rgbclr};""/>",
                       () => $@"<div class=""img invalid"" count=""{parts.Count}""/>"
                   ))
                   .Append($@"
@@ -187,10 +204,14 @@ Usage:
         </tr>
     </table>
 </li>");
-                total += tprice;
+                if (tprice != float.NaN)
+                    total += tprice;
 
                 string sel(Func<string> f1, Func<string> f2, Func<string> f3) => (bvar1 != null ? f1 : bvar2 != null ? f2 : f3)();
             }
+
+            if (total == 0 && partlist.Any())
+                total = float.NaN;
 
             string css;
 

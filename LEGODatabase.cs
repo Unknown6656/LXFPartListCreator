@@ -15,7 +15,7 @@ using CsQuery;
 
 namespace LXFPartListCreator
 {
-    public abstract class LEGODatabase
+    public abstract class LEGODatabaseProvider
         : IDisposable
     {
         public const string FILE_INDEX = "index.db";
@@ -29,6 +29,8 @@ namespace LXFPartListCreator
 
         public abstract BrickInfo this[int ID] { internal set; get; }
 
+        public abstract string Name { get; }
+
 
         public abstract ColorInfo GetColor(int ID);
 
@@ -39,6 +41,10 @@ namespace LXFPartListCreator
         protected abstract void InternalDispose();
 
         public abstract void Save();
+
+        protected internal abstract void Load();
+
+        protected internal abstract void LoadMerge();
 
         public virtual void ClearIndex() => Exec(() =>
         {
@@ -73,7 +79,7 @@ namespace LXFPartListCreator
         protected T Exec<T>(Func<T> f)
         {
             if (IsDisposed)
-                throw new ObjectDisposedException(nameof(BricksetDatabase));
+                throw new ObjectDisposedException(nameof(BricksetDotCom));
             else
                 return f();
         }
@@ -81,12 +87,14 @@ namespace LXFPartListCreator
         protected void Exec(Action f)
         {
             if (IsDisposed)
-                throw new ObjectDisposedException(nameof(BricksetDatabase));
+                throw new ObjectDisposedException(nameof(BricksetDotCom));
             else
                 f();
         }
 
-        public LEGODatabase(string dir)
+        public override string ToString() => Name;
+
+        public LEGODatabaseProvider(string dir)
         {
             dbdir = new DirectoryInfo(dir);
 
@@ -97,17 +105,98 @@ namespace LXFPartListCreator
         }
     }
 
+    public sealed class LEGODatabaseManager
+        : LEGODatabaseProvider
+    {
+        private readonly List<LEGODatabaseProvider> providers = new List<LEGODatabaseProvider>();
+
+        public override string Name => "Database manager";
+
+
+        public override BrickInfo this[int ID]
+        {
+            get
+            {
+                BrickInfo nfo = Each(p => p[ID]);
+
+                this[ID] = nfo;
+                
+                return nfo;
+            }
+            internal set => Each(p => p[ID] = value);
+        }
+
+        public LEGODatabaseProvider[] Providers => providers.ToArray();
+
+        public override ColorInfo GetColor(int ID) => Each(p => p.GetColor(ID));
+
+        public override string GetImageByPartID(int? partID) => Each(p => p.GetImageByPartID(partID));
+
+        public override string GetImageByDesignID(int designID, int colorID = -1) => Each(p => p.GetImageByDesignID(designID, colorID));
+
+        protected override void InternalDispose() => Each(p => p.Dispose());
+
+        public override void Save() => Each(p =>
+        {
+            p.LoadMerge();
+            p.Save();
+        });
+
+        protected internal override void Load() => Each(p => p.Load());
+
+        protected internal override void LoadMerge() => Each(p => p.LoadMerge());
+
+        private void Each(Action<LEGODatabaseProvider> f) => Exec(() =>
+        {
+            foreach (LEGODatabaseProvider prv in providers)
+                f(prv);
+        });
+
+        private T Each<T>(Func<LEGODatabaseProvider, T> f)
+            where T : class => Exec(() =>
+            {
+                T res = null;
+
+                foreach (LEGODatabaseProvider prv in providers)
+                    try
+                    {
+                        if ((res = f(prv)) != null)
+                            break;
+                    }
+                    catch
+                    {
+                    }
+
+                return res;
+            });
+
+        public void AddProvider(LEGODatabaseProvider provider) => Exec(() =>
+        {
+            if (provider != null)
+                providers.Add(provider);
+        });
+
+        public void AddProvider<T>()
+            where T : LEGODatabaseProvider => AddProvider(Activator.CreateInstance(typeof(T), dbdir.FullName) as LEGODatabaseProvider);
+
+        public LEGODatabaseManager(string dir)
+            : base(dir)
+        {
+        }
+    }
+
     // implementation for http://brickset.com/
-    public sealed class BricksetDatabase
-        : LEGODatabase
+    public sealed class BricksetDotCom
+        : LEGODatabaseProvider
     {
         public const string URL_DESIGN = "https://brickset.com/parts/design-{0}";
         public const string URL_PART = "https://brickset.com/parts/{0}/";
+        public const string URL_BUY = "https://brickset.com/ajax/parts/buy?partID={0}";
 
         internal static readonly XmlSerializer ser = new XmlSerializer(typeof(BrickDB));
 
-        private readonly Dictionary<int, ColorInfo> colors = new Dictionary<int, ColorInfo>();
-        private readonly Dictionary<int, BrickInfo> bricks = new Dictionary<int, BrickInfo>();
+        private Dictionary<int, ColorInfo> colors = new Dictionary<int, ColorInfo>();
+        private Dictionary<int, BrickInfo> bricks = new Dictionary<int, BrickInfo>();
         private readonly WebClient wc = new WebClient();
 
 
@@ -133,7 +222,9 @@ namespace LXFPartListCreator
                 Save();
             }
         }
-        
+
+        public override string Name => "brickset.com";
+
         public override ColorInfo GetColor(int ID) => Exec(() => colors.ContainsKey(ID) ? colors[ID] : null);
 
         public override string GetImageByDesignID(int designID, int colorID = -1) => Exec(() =>
@@ -156,7 +247,7 @@ namespace LXFPartListCreator
                 return pids.First();
             else
             {
-                CQ dom = wc.DownloadString(string.Format(URL_PART, partID));
+                CQ dom = DownloadString(string.Format(URL_PART, partID));
                 var id = dom["section.main img.partimage[alt]"][0]["alt"];
 
                 return int.Parse(id);
@@ -169,13 +260,12 @@ namespace LXFPartListCreator
             {
                 Console.WriteLine($"Fetching design No.{designID} ...");
 
-                string html = wc.DownloadString(string.Format(URL_DESIGN, designID));
+                string html = DownloadString(string.Format(URL_DESIGN, designID));
                 CQ dom = html;
 
                 var cs_iteminfo = "section.main div.iteminfo";
 
                 var iteminfo = dom[cs_iteminfo];
-                var img = dom[cs_iteminfo + " img[src]"][0]?["src"];
                 var col2 = dom[cs_iteminfo + " div.col"].ToList()?[1].Cq();
                 var name = col2.Find("h1")[0].InnerHTML + "<br/>";
                 var table = col2.Find("dd").ToList();
@@ -207,8 +297,7 @@ namespace LXFPartListCreator
             foreach (var variation in variations)
                 try
                 {
-                    var a = variation.Cq().Find("ul li a[href] img[title]").ToList();
-                    string parturl = a[0]["src"];
+                    string parturl = variation.Cq().Find("ul li a[href] img[title]").ToList()[0]["src"];
                     int partid = parturl.match(@"\/(?<id>[0-9]+)\.(jpe?g|(d|p)ng|bmp|gif|tiff)$", out Match m) ? int.Parse(m.Groups["id"].ToString()) : -1;
 
                     if (partid != -1)
@@ -217,9 +306,10 @@ namespace LXFPartListCreator
 
                         DownloadImage(parturl, partid);
 
-                        CQ dom = wc.DownloadString(string.Format(URL_PART, partid));
+                        CQ dom = DownloadString(string.Format(URL_PART, partid), partid);
+                        CQ buy = DownloadString(string.Format(URL_BUY + "&_=" + DateTime.Now.Ticks, partid), partid);
                         var table = dom["section.featurebox div.text"].Find("dl dd").ToList();
-                        var prices = from elem in dom["section.buy span.price a"].ToList()
+                        var prices = from elem in buy["span.price a"].ToList()
                                      where elem.InnerTextAllowed
                                      let text = elem.InnerText
                                      where text.match(@"[0-9]+\.[0-9]{2}", out m)
@@ -280,7 +370,7 @@ namespace LXFPartListCreator
             FileInfo path = new FileInfo(dbdir.FullName + '/' + string.Format(FILE_IMAGE, partID));
 
             if (!path.Exists)
-                wc.DownloadFile(uri, path.FullName);
+                wc.DownloadFile(uri.Replace("/1/", "/2/"), path.FullName);
         }
 
         protected override void InternalDispose() => wc?.Dispose();
@@ -305,27 +395,80 @@ namespace LXFPartListCreator
             bricks.Clear();
             colors.Clear();
         }
-        
-        public BricksetDatabase(string dir)
-            : base(dir)
+
+        protected internal override void Load()
         {
             if (dbnfo.Exists)
+            {
+                var b = new Dictionary<int, BrickInfo>(bricks);
+                var c = new Dictionary<int, ColorInfo>(colors);
+
+                bricks.Clear();
+                colors.Clear();
+
                 try
                 {
-                    using (FileStream fs = dbnfo.OpenRead())
-                    {
-                        BrickDB db = ser.Deserialize(fs) as BrickDB;
-
-                        bricks = db.Bricks.ToDictionary(b => b.DesignID, b => b);
-                        colors = db.Colors.ToDictionary(b => b.ID, b => b);
-                    }
+                    LoadMerge();
                 }
                 catch (Exception ex)
                 {
                     ex.Err();
+
+                    bricks = b;
+                    colors = c;
                 }
+            }
         }
+
+        protected internal override void LoadMerge()
+        {
+            using (FileStream fs = dbnfo.OpenRead())
+            {
+                BrickDB db = ser.Deserialize(fs) as BrickDB;
+
+                foreach (BrickInfo b in db?.Bricks ?? new BrickInfo[0])
+                    if (b != null)
+                        if (bricks.ContainsKey(b.DesignID))
+                        {
+                            if (b.FetchDate > bricks[b.DesignID].FetchDate)
+                                bricks[b.DesignID] = b;
+                        }
+                        else
+                            bricks[b.DesignID] = b;
+
+                foreach (ColorInfo c in db.Colors ?? new ColorInfo[0])
+                    if (c != null)
+                        colors[c.ID] = c;
+            }
+        }
+
+        private string DownloadString(string url, int id = -1)
+        {
+            wc.Headers.Add("authority", "brickset.com:443");
+            wc.Headers.Add("x-requested-with", "XMLHttpRequest");
+            //wc.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate, br";
+            wc.Headers[HttpRequestHeader.Host] = $"brickset.com:443";
+            wc.Headers[HttpRequestHeader.Referer] = $"https://brickset.com/parts/{id}/";
+            wc.Headers[HttpRequestHeader.Cookie] = @"
+PreferredCountry2=CountryCode=DE&CountryName=Germany;
+ActualCountry=CountryCode=DE&CountryName=Germany;
+setsPageLength=200;
+buyPageLength=200;
+partsPageLength=200;
+setsListFormat=List;
+setsSortOrder=DERetailPrice;
+buySortOrder=Price;
+cookieconsent_dismissed=yes;
+partsSortOrder=setcount;
+partsListFormat=Images;
+".Replace('\n', ' ').Replace('\r', ' ').Trim(); // yeah, cookies!
+
+            return wc.DownloadString(url);
+        }
+
+        public BricksetDotCom(string dir) : base(dir) => Load();
     }
+
 
     [Serializable, XmlType(AnonymousType = true), XmlRoot(Namespace = "", IsNullable = false)]
     public sealed partial class BrickDB
@@ -370,8 +513,6 @@ namespace LXFPartListCreator
         public int[] ProductionDate { set; get; }
         [XmlElement]
         public BrickVariation[] Variations { set; get; }
-        [XmlIgnore]
-        public int PartID => Variations?.Select(_ => _.PartID)?.FirstOrDefault() ?? -1;
         [XmlIgnore]
         public float PriceAvg => Variations?.Select(_ => _.PriceAvg)?.Average() ?? float.NaN;
     }
