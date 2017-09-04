@@ -8,6 +8,12 @@ body {
     text-align: center;
 }
 
+svg {
+    visibility: collapse;
+    display: none;
+    opacity: 0;
+}
+
 div#content {
     background-color: #cdf;
     border: 1px solid #888;
@@ -63,6 +69,16 @@ ul#list {
             margin: 0px;
         }
 
+        td.td1 {
+            max-width: 90px;
+            min-width: 90px;
+            width: 90px;
+        }
+
+        td.td3 {
+            min-width: 150px;
+        }
+
         div.img[count] {
             background-color: transparent;
             background-size: contain;
@@ -92,6 +108,14 @@ ul#list {
         div.img[count].invalid {
             -webkit-filter: grayscale(100%);
             filter: grayscale(100%);
+        }
+
+        div.img[count].invalid::before {
+            background-color: rgba(0, 0, 0, 0.3);
+            position: absolute;
+            display: block;
+            height: 100%;
+            width: 100%;
         }
     }
 }

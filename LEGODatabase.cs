@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.Threading.Tasks;
 using System.Drawing.Imaging;
+using System.Globalization;
+using System.Diagnostics;
 using System.Xml.Schema;
+using System.Threading;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -30,6 +33,9 @@ namespace LXFPartListCreator
         public abstract BrickInfo this[int ID] { internal set; get; }
 
         public abstract string Name { get; }
+
+        //expiration in seconds
+        public abstract long CacheExpriration { get; }
 
 
         public abstract ColorInfo GetColor(int ID);
@@ -128,6 +134,8 @@ namespace LXFPartListCreator
 
         public LEGODatabaseProvider[] Providers => providers.ToArray();
 
+        public override long CacheExpriration => long.MaxValue;
+
         public override ColorInfo GetColor(int ID) => Each(p => p.GetColor(ID));
 
         public override string GetImageByPartID(int? partID) => Each(p => p.GetImageByPartID(partID));
@@ -192,12 +200,13 @@ namespace LXFPartListCreator
         public const string URL_DESIGN = "https://brickset.com/parts/design-{0}";
         public const string URL_PART = "https://brickset.com/parts/{0}/";
         public const string URL_BUY = "https://brickset.com/ajax/parts/buy?partID={0}";
+        public const long CACHE_EXP = 60 * 60 * 12;
 
         internal static readonly XmlSerializer ser = new XmlSerializer(typeof(BrickDB));
 
         private Dictionary<int, ColorInfo> colors = new Dictionary<int, ColorInfo>();
         private Dictionary<int, BrickInfo> bricks = new Dictionary<int, BrickInfo>();
-        private readonly WebClient wc = new WebClient();
+        private WebClient wc = new WebClient();
 
 
         public override BrickInfo this[int ID]
@@ -225,6 +234,8 @@ namespace LXFPartListCreator
 
         public override string Name => "brickset.com";
 
+        public override long CacheExpriration => CACHE_EXP;
+
         public override ColorInfo GetColor(int ID) => Exec(() => colors.ContainsKey(ID) ? colors[ID] : null);
 
         public override string GetImageByDesignID(int designID, int colorID = -1) => Exec(() =>
@@ -235,7 +246,18 @@ namespace LXFPartListCreator
             return GetImageByPartID(v?.PartID);
         });
 
-        public override string GetImageByPartID(int? partID) => Exec(() => partID is int id ? ImgGetB64(string.Format(dbdir.FullName + '/' + FILE_IMAGE, id)) : "");
+        public override string GetImageByPartID(int? partID) => Exec(() =>
+        {
+            if (partID is int id)
+            {
+                if (id <= 99999)
+                    id = this[id]?.Variations?.FirstOrDefault()?.PartID ?? -1;
+                
+                return id < 0 ? "" : ImgGetB64(string.Format(dbdir.FullName + '/' + FILE_IMAGE, id));
+            }
+            else
+                return "";
+        });
 
         private int GetDesignID(int partID)
         {
@@ -263,12 +285,17 @@ namespace LXFPartListCreator
                 string html = DownloadString(string.Format(URL_DESIGN, designID));
                 CQ dom = html;
 
+                if (html is null)
+                    Debugger.Break();
+
                 var cs_iteminfo = "section.main div.iteminfo";
 
                 var iteminfo = dom[cs_iteminfo];
                 var col2 = dom[cs_iteminfo + " div.col"].ToList()?[1].Cq();
                 var name = col2.Find("h1")[0].InnerHTML + "<br/>";
                 var table = col2.Find("dd").ToList();
+                var vars_raw = dom["section.main div.partlist > ul li.item"].ToList().ToArray() ?? new IDomObject[0];
+                BrickVariation[] vars;
 
                 name = name.Remove(name.ToLower().IndexOf("<br"));
 
@@ -277,8 +304,8 @@ namespace LXFPartListCreator
                     Name = name,
                     DesignID = designID,
                     ProductionDate = GetYear(table[2].TextContent),
-                    FetchDate = DateTime.Now.Ticks,
-                    Variations = FetchVariations(dom["section.main div.partlist > ul li.item"].ToList().ToArray() ?? new IDomObject[0])
+                    Variations = vars = FetchVariations(vars_raw),
+                    FetchDate = (vars_raw.Length - vars.Length) > 0 ? -1 : DateTime.Now.Ticks,
                 };
             }
             catch (Exception ex)
@@ -332,7 +359,7 @@ namespace LXFPartListCreator
                     ex.Err();
                 }
 
-            return vlist.ToArray();
+            return vlist.OrderBy(v => v.ColorID).ToArray();
         }
 
         private static string ImgGetB64(string path)
@@ -370,7 +397,7 @@ namespace LXFPartListCreator
             FileInfo path = new FileInfo(dbdir.FullName + '/' + string.Format(FILE_IMAGE, partID));
 
             if (!path.Exists)
-                wc.DownloadFile(uri.Replace("/1/", "/2/"), path.FullName);
+                DownloadFile(uri.Replace("/1/", "/2/"), path.FullName);
         }
 
         protected override void InternalDispose() => wc?.Dispose();
@@ -383,8 +410,8 @@ namespace LXFPartListCreator
             using (FileStream fs = dbnfo.Create())
                 ser.Serialize(fs, new BrickDB
                 {
-                    Bricks = bricks.Values.ToArray(),
-                    Colors = colors.Values.ToArray(),
+                    Bricks = bricks.Values.OrderBy(b => b?.DesignID).ToArray(),
+                    Colors = colors.Values.OrderBy(c => c?.ID).ToArray(),
                 });
         }
 
@@ -439,14 +466,23 @@ namespace LXFPartListCreator
                 foreach (ColorInfo c in db.Colors ?? new ColorInfo[0])
                     if (c != null)
                         colors[c.ID] = c;
+
+                long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
+
+                foreach (int id in bricks.Keys)
+                    if (bricks[id].FetchDate < now)
+                        AddUpdate(id);
+
+                foreach (int id in colors.Keys)
+                    if (colors[id].FetchDate < now)
+                        AddUpdate(id);
             }
         }
 
-        private string DownloadString(string url, int id = -1)
+        private void SetHeaders(int id = -1)
         {
             wc.Headers.Add("authority", "brickset.com:443");
             wc.Headers.Add("x-requested-with", "XMLHttpRequest");
-            //wc.Headers[HttpRequestHeader.AcceptEncoding] = "gzip, deflate, br";
             wc.Headers[HttpRequestHeader.Host] = $"brickset.com:443";
             wc.Headers[HttpRequestHeader.Referer] = $"https://brickset.com/parts/{id}/";
             wc.Headers[HttpRequestHeader.Cookie] = @"
@@ -462,9 +498,62 @@ cookieconsent_dismissed=yes;
 partsSortOrder=setcount;
 partsListFormat=Images;
 ".Replace('\n', ' ').Replace('\r', ' ').Trim(); // yeah, cookies!
+        }
+
+        private T TryWebAction<T>(Func<T> f, int count = 3, int timeout = 9000)
+        {
+            WebException last = null;
+            int @try = 0;
+
+            while (@try < count)
+                try
+                {
+                    if (@try == count - 1)
+                    {
+                        wc.Dispose();
+                        wc = new WebClient(); // reset web client;
+                    }
+
+                    return f();
+                }
+                catch (WebException ex)
+                {
+                    int code = (int)(ex.Response as HttpWebResponse).StatusCode;
+
+                    if ((code == 400) ||
+                        (code == 401) ||
+                        (code >= 500))
+                    {
+                        Console.WriteLine($"   attempt no.{++@try}");
+                        Thread.Sleep(timeout / count);
+
+                        last = ex;
+                    }
+                    else
+                        throw;
+                }
+
+            Thread.Sleep(30000); // "cool down" web polls ... I should prob. do smth. better than 'thread::sleep' -__-
+
+            wc.Dispose();
+            wc = new WebClient(); // reset web client;
+
+            return last is null ? default(T) : throw last;
+        }
+
+        private void DownloadFile(string url, string path) => TryWebAction(() =>
+        {
+            wc.DownloadFile(url, path);
+
+            return null as object;
+        });
+
+        private string DownloadString(string url, int id = -1) => TryWebAction(() =>
+        {
+            SetHeaders(id);
 
             return wc.DownloadString(url);
-        }
+        });
 
         public BricksetDotCom(string dir) : base(dir) => Load();
     }
@@ -495,6 +584,21 @@ partsListFormat=Images;
         public string Type { set; get; }
         [XmlAttribute]
         public string RGB { set; get; }
+        [XmlIgnore]
+        public float[] RGBAValues
+        {
+            get
+            {
+                if (RGB.match(@"\#(?<r>[0-9a-f]{2})(?<g>[0-9a-f]{2})(?<b>[0-9a-f]{2})(?<a>[0-9a-f]{2})?", out Match m))
+                    return new float[] { getfloat("r"), getfloat("g"), getfloat("b"), getfloat("a", 1) };
+                else
+                    return new float[] { float.NaN, float.NaN, float.NaN, 1 };
+                
+
+                float getfloat(string group, float def = float.NaN) =>
+                    m.Groups[group].Success ? int.Parse(m.Groups[group].ToString(), NumberStyles.HexNumber) / 255f : def;
+            }
+        }
     }
 
     [Serializable, XmlType(AnonymousType = true)]

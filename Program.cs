@@ -148,9 +148,11 @@ ________________________________________________________________________________
 
             var partlist = (from brick in lxfml.Bricks.Brick
                             let part = brick.Part
-                            from mat in part?.materials ?? new int[0]
-                            from dec in part?.decoration ?? new int[0]
-                            where mat != 0
+                            //from mat in part?.materials ?? new int[0]
+                            //from dec in part?.decoration ?? new int[0]
+                            //where mat != 0
+                            let mat = part?.materials?.FirstOrDefault() ?? 0
+                            let dec = part?.decoration?.FirstOrDefault() ?? 0
                             group brick by (id: part.designID, mat: mat, dec: dec) into g
                             let count = g.Count()
                             orderby g.Key.id ascending
@@ -164,34 +166,63 @@ ________________________________________________________________________________
                                 Bricks = g as IEnumerable<LXFMLBricksBrick>
                             }).ToArray();
             float total = 0;
+            int partno = 0;
+            int partcnt = lxfml.Bricks.Brick.Length;
 
-            foreach (var parts in partlist.Take(20))
+            foreach (var parts in partlist)
             {
                 BrickInfo part = db[parts.ID];
-                BrickVariation bvar1 = part.Variations.FirstOrDefault(v => v.ColorID == parts.Matr || v.PartID == parts.ID);
-                BrickVariation bvar2 = bvar1 ?? part.Variations.FirstOrDefault();
+                BrickVariation bvar1 = part?.Variations?.FirstOrDefault(v => v.ColorID == parts.Matr || v.PartID == parts.ID);
+                BrickVariation bvar2 = bvar1 ?? part?.Variations?.FirstOrDefault();
                 ColorInfo color = db.GetColor(bvar1?.ColorID ?? parts.Matr) ?? db.GetColor(bvar2?.ColorID ?? 0);
                 string rgbclr = color?.RGB ?? "transparent";
                 float pprice = bvar2?.PriceAvg ?? float.NaN;
                 float tprice = parts.Count * pprice;
+                string svgmatrix = sel(
+                        () => $@"1 0 0 0 0
+                                 0 1 0 0 0
+                                 0 0 1 0 0
+                                 0 0 0 1 0",
+                        () =>
+                        {
+                            float[] rgba = color?.RGBAValues ?? new float[] { 0, 0, 0, 1 };
+                            return $@"0 {1 - rgba[0]} 0 0 {rgba[0]}
+                                      0 {1 - rgba[1]} 0 0 {rgba[1]}
+                                      0 {1 - rgba[2]} 0 0 {rgba[2]}
+                                      0 0 0 {rgba[3]} 0";
+                        },
+                        () => $@"0 0 0 0 0
+                                 0 0 0 0 0
+                                 0 0 0 0 0
+                                 0 0 0 0 0"
+                    );
+                string svg = db.GetImageByPartID(bvar2?.PartID ?? parts.ID) ?? "";
 
-                sb.Append(@"
+                if (svg.Length > 0)
+                {
+                    svg = $@"
+<?xml version=""1.0"" encoding=""UTF-8""?>
+<svg xmlns=""http://www.w3.org/2000/svg"" xmlns:xlink=""http://www.w3.org/1999/xlink"" version=""1.1"" width=""192px"" height=""192px"">
+    <filter id=""fx_{partno}"">
+        <feColorMatrix type=""matrix"" values=""{svgmatrix}""/>
+    </filter>
+    <image filter=""url(#fx_{partno})"" width=""192"" height=""192"" preserveAspectRatio=""xMinYMin slice"" xlink:href=""{svg}""/>
+</svg>".Trim();
+                    svg = $"data:image/svg+xml;base64,{Convert.ToBase64String(Encoding.UTF8.GetBytes(svg))}";
+                }
+
+                sb.Append($@"
 <li>
     <table border=""0"" width=""100%"">
         <tr width=""100%"">
-            <td>")
-                  .Append(sel(
-                      () => $@"<div class=""img"" count=""{parts.Count}"" style=""background-image: url('{db.GetImageByPartID(bvar1.PartID)}');""/>",
-                      () => $@"<div class=""img invalid"" count=""{parts.Count}"" style=""background-image: url('{db.GetImageByPartID(bvar2.PartID)}'); box-shadow: inset 0px 0px 72px 72px {rgbclr}, 0px 0px 4px 4px {rgbclr};""/>",
-                      () => $@"<div class=""img invalid"" count=""{parts.Count}""/>"
-                  ))
-                  .Append($@"
-                    </td>
-                    <td>
-                        <h2>{part.Name} &nbsp; - &nbsp; {color?.Name}</h2>
-                        <span class=""mono"">
-                            ID: p.{bvar2?.PartID}/d.{part.DesignID}
-                        </span>
+            <td class=""td1"">
+                <div class=""img"" count=""{parts.Count}"" style=""background-image: url('{svg}');""/>
+            </td>
+            <td>
+                <h2>{part?.Name ?? $"&lt;{parts.ID}&gt;"} &nbsp; - &nbsp; {color?.Name}</h2>
+                <span class=""mono"">
+                    ID: p.{bvar2?.PartID}/d.{part?.DesignID}
+                </span>
 ")
                   .Append(sel(
                       () => "",
@@ -200,15 +231,44 @@ ________________________________________________________________________________
                   ))
                   .Append($@"
             </td>
-            <td valign=""bottom"" align=""right"" class=""mono"">{parts.Count} x {pprice:F2}€ = {tprice:F2}€</td>
+            <td valign=""bottom"" align=""right"" class=""mono td3"">
+                <a target=""_blank"" href=""{string.Format(bvar1 is null ? BricksetDotCom.URL_DESIGN : BricksetDotCom.URL_PART, bvar1?.PartID ?? parts.ID)}"">
+                    Buy at<br/>brickset.com
+                </a>
+                <br/>
+                {parts.Count} x {pprice:F2}€ = {tprice:F2}€
+            </td>
         </tr>
     </table>
 </li>");
                 if (tprice != float.NaN)
                     total += tprice;
 
+                partcnt -= parts.Count;
+
+                ++partno;
+
                 string sel(Func<string> f1, Func<string> f2, Func<string> f3) => (bvar1 != null ? f1 : bvar2 != null ? f2 : f3)();
             }
+
+            if (partcnt > 0)
+                sb.Append($@"
+<li>
+    <table border=""0"" width=""100%"">
+        <tr width=""100%"">
+            <td class=""td1"">
+                <div class=""img"" count=""{partcnt}""/>
+            </td>
+            <td>
+                <h2>??????????????</h2>
+                <span class=""mono"">
+                    ID: p.???????/d.?????
+                </span>
+            </td>
+            <td valign=""bottom"" align=""right"" class=""mono td3"">{partcnt} x ???€ = ???€</td>
+        </tr>
+    </table>
+</li>");
 
             if (total == 0 && partlist.Any())
                 total = float.NaN;
@@ -221,8 +281,8 @@ ________________________________________________________________________________
 
             return Resources.template.DFormat(new Dictionary<string, object>
             {
-                ["model_price"] = $"{total:F2}€",
                 ["style"] = css,
+                ["model_price"] = $"{total:F2}€",
                 ["timestamp"] = DateTime.Now.ToString("dd. MMM yyyy - HH:mm:ss.ffffff"),
                 ["model_path"] = opt["in"],
                 ["model_name"] = lxfml.name,
