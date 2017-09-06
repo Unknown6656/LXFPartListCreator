@@ -89,6 +89,7 @@ ________________________________________________________________________________
                         LXFML lxfml;
 
                         db.AddProvider<BricksetDotCom>();
+                        db.AddProvider<BrickowlDotCom>();
                         // TODO : add other services/backup sites [?]
 
                         if (hasopt("--delete-cache", out _))
@@ -113,13 +114,14 @@ ________________________________________________________________________________
                         }
 
                         FileInfo nfo = new FileInfo(@out);
+                        string html = GenerateHTML(lxfml, thumbnail, opt, db);
 
                         if (nfo.Exists)
                             nfo.Delete();
 
                         using (FileStream fs = nfo.OpenWrite())
                         using (StreamWriter wr = new StreamWriter(fs, Encoding.UTF8))
-                            wr.Write(GenerateHTML(lxfml, thumbnail, opt, db));
+                            wr.Write(html);
 
                         if (hasopt("open-after-success", out _))
                             Process.Start(@out);
@@ -165,7 +167,7 @@ ________________________________________________________________________________
                                 Decor = g.Key.dec,
                                 Bricks = g as IEnumerable<LXFMLBricksBrick>
                             }).ToArray();
-            float total = 0;
+            (float min, float avg, float max) total = (0, 0, 0);
             int partno = 0;
             int partcnt = lxfml.Bricks.Brick.Length;
 
@@ -176,8 +178,8 @@ ________________________________________________________________________________
                 BrickVariation bvar2 = bvar1 ?? part?.Variations?.FirstOrDefault();
                 ColorInfo color = db.GetColor(bvar1?.ColorID ?? parts.Matr) ?? db.GetColor(bvar2?.ColorID ?? 0);
                 string rgbclr = color?.RGB ?? "transparent";
-                float pprice = bvar2?.PriceAvg ?? float.NaN;
-                float tprice = parts.Count * pprice;
+                (float min, float avg, float max) pprice = (bvar2?.PriceMin ?? float.NaN, bvar2?.PriceAvg ?? float.NaN, bvar2?.PriceMax ?? float.NaN);
+                (float min, float avg, float max) tprice = (parts.Count * pprice.min, parts.Count * pprice.avg, parts.Count * pprice.max);
                 string svgmatrix = sel(
                         () => $@"1 0 0 0 0
                                  0 1 0 0 0
@@ -185,16 +187,21 @@ ________________________________________________________________________________
                                  0 0 0 1 0",
                         () =>
                         {
-                            float[] rgba = color?.RGBAValues ?? new float[] { 0, 0, 0, 1 };
-                            return $@"0 {1 - rgba[0]} 0 0 {rgba[0]}
-                                      0 {1 - rgba[1]} 0 0 {rgba[1]}
-                                      0 {1 - rgba[2]} 0 0 {rgba[2]}
-                                      0 0 0 {rgba[3]} 0";
+                            float[] c1 = color?.RGBAValues ?? new float[] { 0, 0, 0, 1 };
+                            float[] c2 = new float[] { 0, 0, 0, 1 };
+                            return $@"0 {c1[0] - c2[0]} 0 0 {c2[1]}
+                                      0 {c1[1] - c2[1]} 0 0 {c2[2]}
+                                      0 {c1[2] - c2[2]} 0 0 {c2[3]}
+                                      0 0 0 {c1[3] * c2[3]} 0";
+                            //return $@"0 {1 - rgba[0]} 0 0 {rgba[0]}
+                            //          0 {1 - rgba[1]} 0 0 {rgba[1]}
+                            //          0 {1 - rgba[2]} 0 0 {rgba[2]}
+                            //          0 0 0 {rgba[3]} 0";
                         },
-                        () => $@"0 0 0 0 0
-                                 0 0 0 0 0
-                                 0 0 0 0 0
-                                 0 0 0 0 0"
+                        () => $@"0 1 0 0 0
+                                 0 1 0 0 0
+                                 0 1 0 0 0
+                                 0 0 0 .2 0"
                     );
                 string svg = db.GetImageByPartID(bvar2?.PartID ?? parts.ID) ?? "";
 
@@ -236,13 +243,18 @@ ________________________________________________________________________________
                     Buy at<br/>brickset.com
                 </a>
                 <br/>
-                {parts.Count} x {pprice:F2}€ = {tprice:F2}€
+                {parts.Count} x {pprice.min:F2}€ = {tprice.min:F2}€
+                <br/>
+                {parts.Count} x {pprice.avg:F2}€ = {tprice.avg:F2}€
+                <br/>
+                {parts.Count} x {pprice.max:F2}€ = {tprice.max:F2}€
             </td>
         </tr>
     </table>
 </li>");
-                if (tprice != float.NaN)
-                    total += tprice;
+                if (tprice.min != float.NaN) total.min += tprice.min;
+                if (tprice.avg != float.NaN) total.avg += tprice.avg;
+                if (tprice.max != float.NaN) total.max += tprice.max;
 
                 partcnt -= parts.Count;
 
@@ -265,13 +277,21 @@ ________________________________________________________________________________
                     ID: p.???????/d.?????
                 </span>
             </td>
-            <td valign=""bottom"" align=""right"" class=""mono td3"">{partcnt} x ???€ = ???€</td>
+            <td valign=""bottom"" align=""right"" class=""mono td3"">
+                {partcnt} x ???€ = ???€<br/>
+                {partcnt} x ???€ = ???€<br/>
+                {partcnt} x ???€ = ???€<br/>
+            </td>
         </tr>
     </table>
 </li>");
 
-            if (total == 0 && partlist.Any())
-                total = float.NaN;
+            if (partlist.Any())
+            {
+                if (total.min == 0) total.min = float.NaN;
+                if (total.avg == 0) total.avg = float.NaN;
+                if (total.max == 0) total.max = float.NaN;
+            }
 
             string css;
 
@@ -282,7 +302,9 @@ ________________________________________________________________________________
             return Resources.template.DFormat(new Dictionary<string, object>
             {
                 ["style"] = css,
-                ["model_price"] = $"{total:F2}€",
+                ["model_price_min"] = $"{total.min:F2}€",
+                ["model_price_avg"] = $"{total.avg:F2}€",
+                ["model_price_max"] = $"{total.max:F2}€",
                 ["timestamp"] = DateTime.Now.ToString("dd. MMM yyyy - HH:mm:ss.ffffff"),
                 ["model_path"] = opt["in"],
                 ["model_name"] = lxfml.name,

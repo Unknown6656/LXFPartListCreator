@@ -30,8 +30,16 @@
                     <td align="left">§brick_count§</td>
                 </tr>
                 <tr>
-                    <td align="right">Estimated price</td>
-                    <td align="left">§model_price§</td>
+                    <td align="right">Estimated minimum price</td>
+                    <td align="left">§model_price_min§</td>
+                </tr>
+                <tr>
+                    <td align="right">Estimated average price</td>
+                    <td align="left">§model_price_avg§</td>
+                </tr>
+                <tr>
+                    <td align="right">Estimated maximum price</td>
+                    <td align="left">§model_price_max§</td>
                 </tr>
             </table>
             <br />
@@ -41,7 +49,11 @@
             <ul id="list">
                 §bricks§
             </ul>
-            <span class="price mono">§model_price§</span>
+            <span class="price mono">
+                Min.: §model_price_min§<br />
+                Avg.: §model_price_avg§<br />
+                Max.: §model_price_max§<br />
+            </span>
         </div>
     </body>
 </html>
