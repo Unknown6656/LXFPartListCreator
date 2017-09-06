@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Diagnostics;
-using System.Xml.Schema;
 using System.Threading;
 using System.Drawing;
 using System.Linq;
@@ -36,7 +35,7 @@ namespace LXFPartListCreator
     public interface ILEGOPriceDatabase
         : ILEGODatabase
     {
-        void UpdatePrice(int ID);
+        void UpdatePrice(int ID, bool force = false);
     }
 
     public interface ILEGOBrickDatabase
@@ -317,9 +316,7 @@ partsListFormat=Images;
             where T : class, ILEGODatabase => AddProvider(Activator.CreateInstance(typeof(T), dbdir.FullName, this) as ILEGODatabase);
 
         public LEGODatabaseManager(string dir)
-            : base(dir, null)
-        {
-        }
+            : base(dir, null) => Print("Manager initialized");
     }
 
     // implementation for http://brickset.com/
@@ -436,6 +433,8 @@ partsListFormat=Images;
                     Variations = vars = FetchVariations(vars_raw),
                     FetchDate = (vars_raw.Length - vars.Length) > 0 ? -1 : DateTime.Now.Ticks,
                 };
+
+                Manager.GetProvider<BrickowlDotCom>()?.UpdatePrice(designID);
             }
             catch (Exception ex)
             {
@@ -542,6 +541,8 @@ partsListFormat=Images;
 
         private void DownloadImage(string uri, int partID)
         {
+            Print($"Fetching image for {partID}...");
+
             FileInfo path = new FileInfo(dbdir.FullName + '/' + string.Format(FILE_IMAGE, partID));
 
             if (!path.Exists)
@@ -629,6 +630,9 @@ partsListFormat=Images;
             foreach (int id in colors.Keys.ToArray())
                 if (colors[id].FetchDate < now)
                     AddUpdate(id);
+
+            Print($"{bricks.Count} bricks loaded.");
+            Print($"{colors.Count} colors loaded.");
         }
         
         private T TryWebAction<T>(Func<T> f, int count = 3, int timeout = 9000)
@@ -711,7 +715,7 @@ partsListFormat=Images;
             Load();
         }
 
-        public void UpdatePrice(int ID)
+        public void UpdatePrice(int ID, bool force = false)
         {
 #if USE_OLD_BRICKOWL_IMPL
             if (LEGODatabaseProvider.IsPartID(ID))
@@ -764,6 +768,19 @@ partsListFormat=Images;
 #else
             int desg_id = LEGODatabaseProvider.IsPartID(ID) ? Brickset.GetDesignID(ID) : ID;
             int part_id = Brickset[ID]?.Variations?.FirstOrDefault()?.PartID ?? ID;
+
+            if (!force && prices.ContainsKey(part_id))
+            {
+                var prc = prices[part_id];
+                long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
+
+
+                if ((prc.Min != float.NaN) &&
+                    (prc.Avg != float.NaN) &&
+                    (prc.Max != float.NaN) &&
+                    (prc.Date >= now))
+                    return;
+            }
 
             try
             {
@@ -827,31 +844,16 @@ partsListFormat=Images;
         public void UpdateOld()
         {
             long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
-            int cnt = 0;
 
             foreach (int id in prices.Keys.ToArray())
-                if ((prices[id].Min == float.NaN) || (prices[id].Max == float.NaN) || (prices[id].Avg == float.NaN) || (prices[id].Date < now))
-                {
-                    UpdatePrice(id);
+                UpdatePrice(id);
 
-                    ++cnt;
-                    cnt %= 10;
-
-                    if (cnt == 0)
-                        Save();
-                }
-
-            Save();
-
-            void Save()
+            try
             {
-                try
-                {
-                    Brickset.Save();
-                }
-                catch
-                {
-                }
+                Brickset.Save();
+            }
+            catch
+            {
             }
         }
 
@@ -869,6 +871,8 @@ partsListFormat=Images;
                      .ToDictionary(v => v.id, v => (v.min, v.max, v.avg, v.dat));
 
             UpdateOld();
+
+            Print($"{prices.Count * 3} prices loaded.");
         }
 
         public void Save()

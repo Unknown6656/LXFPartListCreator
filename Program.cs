@@ -20,6 +20,7 @@ namespace LXFPartListCreator
 
     using Properties;
 
+
     public static class Program
     {
         public const string PATH_CACHE = "part-cache";
@@ -57,7 +58,7 @@ Usage:
     --in=...                Input .LXF file
     --out=...               Output .HTML file
     --ignore-working-dir    Runs the tool from the assembly's location instead of from the working directory
-    -- open-after-success   Opens the generated .HTML file after a successful file generation
+    --open-after-success    Opens the generated .HTML file after a successful file generation
     --cache=...             The LEGO part cache directory. default:
                             '{currdir}/{PATH_CACHE}'
     --delete-cache          Deletes the cache index before generating the .HTML file
@@ -124,7 +125,7 @@ ________________________________________________________________________________
                             wr.Write(html);
 
                         if (hasopt("open-after-success", out _))
-                            Process.Start(@out);
+                            Process.Start(nfo.FullName);
                     }
                     catch (Exception ex)
                     {
@@ -146,6 +147,8 @@ ________________________________________________________________________________
 
         private static string GenerateHTML(LXFML lxfml, string thumbnail, Dictionary<string, string> opt, LEGODatabaseManager db)
         {
+            #region INIT
+
             StringBuilder sb = new StringBuilder();
 
             var partlist = (from brick in lxfml.Bricks.Brick
@@ -170,12 +173,25 @@ ________________________________________________________________________________
             (float min, float avg, float max) total = (0, 0, 0);
             int partno = 0;
             int partcnt = lxfml.Bricks.Brick.Length;
+            int listcnt = partlist.Length;
+
+            void Print(string msg) => WriteLine($"[{DateTime.Now:HH:mm:ss.ffffff}][<main>] {msg}");
+
+            #endregion
 
             foreach (var parts in partlist)
             {
+                #region INIT
+
                 BrickInfo part = db[parts.ID];
                 BrickVariation bvar1 = part?.Variations?.FirstOrDefault(v => v.ColorID == parts.Matr || v.PartID == parts.ID);
                 BrickVariation bvar2 = bvar1 ?? part?.Variations?.FirstOrDefault();
+
+                string sel(Func<string> f1, Func<string> f2, Func<string> f3) => (bvar1 != null ? f1 : bvar2 != null ? f2 : f3)();
+
+                #endregion
+                #region COLOR + SVG MATRIX
+
                 ColorInfo color = db.GetColor(bvar1?.ColorID ?? parts.Matr) ?? db.GetColor(bvar2?.ColorID ?? 0);
                 string rgbclr = color?.RGB ?? "transparent";
                 (float min, float avg, float max) pprice = (bvar2?.PriceMin ?? float.NaN, bvar2?.PriceAvg ?? float.NaN, bvar2?.PriceMax ?? float.NaN);
@@ -203,6 +219,10 @@ ________________________________________________________________________________
                                  0 1 0 0 0
                                  0 0 0 .2 0"
                     );
+
+                #endregion
+                #region SVG
+
                 string svg = db.GetImageByPartID(bvar2?.PartID ?? parts.ID) ?? "";
 
                 if (svg.Length > 0)
@@ -217,6 +237,9 @@ ________________________________________________________________________________
 </svg>".Trim();
                     svg = $"data:image/svg+xml;base64,{Convert.ToBase64String(Encoding.UTF8.GetBytes(svg))}";
                 }
+
+                #endregion
+                #region HTML CORE
 
                 sb.Append($@"
 <li>
@@ -239,10 +262,12 @@ ________________________________________________________________________________
                   .Append($@"
             </td>
             <td valign=""bottom"" align=""right"" class=""mono td3"">
-                <a target=""_blank"" href=""{string.Format(bvar1 is null ? BricksetDotCom.URL_DESIGN : BricksetDotCom.URL_PART, bvar1?.PartID ?? parts.ID)}"">
-                    Buy at<br/>brickset.com
-                </a>
-                <br/>
+                <!--
+                    <a target=""_blank"" href=""{string.Format(bvar1 is null ? BricksetDotCom.URL_DESIGN : BricksetDotCom.URL_PART, bvar1?.PartID ?? parts.ID)}"">
+                        Buy at<br/>brickset.com
+                    </a>
+                    <br/>
+                -->
                 {parts.Count} x {pprice.min:F2}€ = {tprice.min:F2}€
                 <br/>
                 {parts.Count} x {pprice.avg:F2}€ = {tprice.avg:F2}€
@@ -252,6 +277,10 @@ ________________________________________________________________________________
         </tr>
     </table>
 </li>");
+
+                #endregion
+                #region PRICE + DEBUG
+
                 if (tprice.min != float.NaN) total.min += tprice.min;
                 if (tprice.avg != float.NaN) total.avg += tprice.avg;
                 if (tprice.max != float.NaN) total.max += tprice.max;
@@ -259,9 +288,14 @@ ________________________________________________________________________________
                 partcnt -= parts.Count;
 
                 ++partno;
+                
+                if ((int)(partno % (listcnt / 400f)) == 0)
+                    Print($"{100f * partno / listcnt:N3}% generated ({partno}/{listcnt})");
 
-                string sel(Func<string> f1, Func<string> f2, Func<string> f3) => (bvar1 != null ? f1 : bvar2 != null ? f2 : f3)();
+                #endregion
             }
+
+            #region APPEND MISSING
 
             if (partcnt > 0)
                 sb.Append($@"
@@ -285,6 +319,9 @@ ________________________________________________________________________________
         </tr>
     </table>
 </li>");
+
+            #endregion
+            #region PRICE + FORMAT
 
             if (partlist.Any())
             {
@@ -312,8 +349,11 @@ ________________________________________________________________________________
                 ["tool_version"] = $"{lxfml.Meta}",
                 ["thumbnail"] = thumbnail,
                 ["bricks"] = sb.ToString(),
+                ["bricklist_count"] = listcnt,
                 ["brick_count"] = lxfml.Bricks.Brick.Length,
             });
+
+            #endregion
         }
 
         private static Dictionary<string, string> GetOptions(string[] argv)

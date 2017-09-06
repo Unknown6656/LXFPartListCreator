@@ -86,11 +86,14 @@
     </None>
     <None Include="packages.config" />
     <None Include="style.scss" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="brickowl.api.key">
+    <None Include="Test\test.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Test\test.lxf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="NSass.Wrapper\NSass.Wrapper.x64.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
