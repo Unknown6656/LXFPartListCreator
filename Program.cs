@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using System.IO.Compression;
 using System.Diagnostics;
+using System.Threading;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -13,13 +14,12 @@ using System;
 
 using NSass;
 
-namespace LXFPartListCreator
+namespace LXF
 {
     using static ConsoleColor;
     using static Console;
 
     using Properties;
-
 
     public static class Program
     {
@@ -89,14 +89,21 @@ ________________________________________________________________________________
                         string thumbnail;
                         LXFML lxfml;
 
-                        db.AddProvider<BricksetDotCom>();
+                        db.AddProvider<BricksetDotCom>().BitmapPostprocessor = ImageCleanup.RemoveEdges;
                         db.AddProvider<BrickowlDotCom>();
                         // TODO : add other services/backup sites [?]
 
-                        if (hasopt("--delete-cache", out _))
+                        while (!db.CanOperate)
+                        {
+                            WriteLine("Cannot operate yet. Please check your network connection.");
+
+                            Thread.Sleep(2000);
+                        }
+
+                        if (hasopt("delete-cache", out _))
                             db.ClearIndex();
 
-                        if (hasopt("--delete-image-cache", out _))
+                        if (hasopt("delete-image-cache", out _))
                             db.ClearImages();
 
                         using (ZipArchive lxf = ZipFile.Open(@in, ZipArchiveMode.Read))
@@ -156,18 +163,18 @@ ________________________________________________________________________________
                             //from mat in part?.materials ?? new int[0]
                             //from dec in part?.decoration ?? new int[0]
                             //where mat != 0
-                            let mat = part?.materials?.FirstOrDefault() ?? 0
-                            let dec = part?.decoration?.FirstOrDefault() ?? 0
-                            group brick by (id: part.designID, mat: mat, dec: dec) into g
+                            let mat = part?.materials?.Where(m => m > 0).ToArray() ?? new short[0]
+                            let dec = part?.decoration?.Where(m => m > 0).ToArray() ?? new short[0]
+                            group brick by new LXFMLBrickGrouping(part.designID, mat, dec) into g
                             let count = g.Count()
-                            orderby g.Key.id ascending
+                            orderby g.Key.DesignID ascending
                             orderby count descending
                             select new
                             {
                                 Count = count,
-                                ID = g.Key.id,
-                                Matr = g.Key.mat,
-                                Decor = g.Key.dec,
+                                ID = g.Key.DesignID,
+                                Matr = g.Key.Material,
+                                Decor = g.Key.Decoration,
                                 Bricks = g as IEnumerable<LXFMLBricksBrick>
                             }).ToArray();
             (float min, float avg, float max) total = (0, 0, 0);
@@ -184,60 +191,25 @@ ________________________________________________________________________________
                 #region INIT
 
                 BrickInfo part = db[parts.ID];
-                BrickVariation bvar1 = part?.Variations?.FirstOrDefault(v => v.ColorID == parts.Matr || v.PartID == parts.ID);
+                BrickVariation bvar1 = part?.Variations?.FirstOrDefault(v => parts.Matr.Contains((short)v.ColorID)  || v.PartID == parts.ID);
                 BrickVariation bvar2 = bvar1 ?? part?.Variations?.FirstOrDefault();
 
                 string sel(Func<string> f1, Func<string> f2, Func<string> f3) => (bvar1 != null ? f1 : bvar2 != null ? f2 : f3)();
 
                 #endregion
-                #region COLOR + SVG MATRIX
+                #region COLORIZER + IMAGE
 
-                ColorInfo color = db.GetColor(bvar1?.ColorID ?? parts.Matr) ?? db.GetColor(bvar2?.ColorID ?? 0);
+                ColorInfo color = db.GetColor(bvar1?.ColorID ?? parts.Matr.FirstOrDefault()) ?? db.GetColor(bvar2?.ColorID ?? 0);
                 string rgbclr = color?.RGB ?? "transparent";
                 (float min, float avg, float max) pprice = (bvar2?.PriceMin ?? float.NaN, bvar2?.PriceAvg ?? float.NaN, bvar2?.PriceMax ?? float.NaN);
                 (float min, float avg, float max) tprice = (parts.Count * pprice.min, parts.Count * pprice.avg, parts.Count * pprice.max);
-                string svgmatrix = sel(
-                        () => $@"1 0 0 0 0
-                                 0 1 0 0 0
-                                 0 0 1 0 0
-                                 0 0 0 1 0",
-                        () =>
-                        {
-                            float[] c1 = color?.RGBAValues ?? new float[] { 0, 0, 0, 1 };
-                            float[] c2 = new float[] { 0, 0, 0, 1 };
-                            return $@"0 {c1[0] - c2[0]} 0 0 {c2[1]}
-                                      0 {c1[1] - c2[1]} 0 0 {c2[2]}
-                                      0 {c1[2] - c2[2]} 0 0 {c2[3]}
-                                      0 0 0 {c1[3] * c2[3]} 0";
-                            //return $@"0 {1 - rgba[0]} 0 0 {rgba[0]}
-                            //          0 {1 - rgba[1]} 0 0 {rgba[1]}
-                            //          0 {1 - rgba[2]} 0 0 {rgba[2]}
-                            //          0 0 0 {rgba[3]} 0";
-                        },
-                        () => $@"0 1 0 0 0
-                                 0 1 0 0 0
-                                 0 1 0 0 0
-                                 0 0 0 .2 0"
-                    );
-
-                #endregion
-                #region SVG
-
-                string svg = db.GetImageByPartID(bvar2?.PartID ?? parts.ID) ?? "";
-
-                if (svg.Length > 0)
+                string png = db.GetImageByPartID(bvar2?.PartID ?? parts.ID, bmp =>
                 {
-                    svg = $@"
-<?xml version=""1.0"" encoding=""UTF-8""?>
-<svg xmlns=""http://www.w3.org/2000/svg"" xmlns:xlink=""http://www.w3.org/1999/xlink"" version=""1.1"" width=""192px"" height=""192px"">
-    <filter id=""fx_{partno}"">
-        <feColorMatrix type=""matrix"" values=""{svgmatrix}""/>
-    </filter>
-    <image filter=""url(#fx_{partno})"" width=""192"" height=""192"" preserveAspectRatio=""xMinYMin slice"" xlink:href=""{svg}""/>
-</svg>".Trim();
-                    svg = $"data:image/svg+xml;base64,{Convert.ToBase64String(Encoding.UTF8.GetBytes(svg))}";
-                }
+                    // TODO : colorize
 
+                    return bmp;
+                }) ?? "";
+                
                 #endregion
                 #region HTML CORE
 
@@ -246,34 +218,21 @@ ________________________________________________________________________________
     <table border=""0"" width=""100%"">
         <tr width=""100%"">
             <td class=""td1"">
-                <div class=""img"" count=""{parts.Count}"" style=""background-image: url('{svg}');""/>
+                <div class=""img"" count=""{parts.Count}"" style=""background-image: url('{png}');""/>
             </td>
             <td>
                 <h2>{part?.Name ?? $"&lt;{parts.ID}&gt;"} &nbsp; - &nbsp; {color?.Name}</h2>
                 <span class=""mono"">
                     ID: p.{bvar2?.PartID}/d.{part?.DesignID}
                 </span>
-")
-                  .Append(sel(
-                      () => "",
-                      () => "",
-                      () => ""
-                  ))
-                  .Append($@"
             </td>
             <td valign=""bottom"" align=""right"" class=""mono td3"">
-                <!--
-                    <a target=""_blank"" href=""{string.Format(bvar1 is null ? BricksetDotCom.URL_DESIGN : BricksetDotCom.URL_PART, bvar1?.PartID ?? parts.ID)}"">
-                        Buy at<br/>brickset.com
-                    </a>
-                    <br/>
-                -->
-                {parts.Count} x {pprice.min:F2}€ = {tprice.min:F2}€
-                <br/>
-                {parts.Count} x {pprice.avg:F2}€ = {tprice.avg:F2}€
-                <br/>
-                {parts.Count} x {pprice.max:F2}€ = {tprice.max:F2}€
-            </td>
+                <a target=""_blank"" href=""{string.Format(bvar1 is null ? BricksetDotCom.URL_DESIGN : BricksetDotCom.URL_PART, bvar1?.PartID ?? parts.ID)}"">   	
+                    &#8631; brickset.com<br/>
+                </a>
+                {parts.Count} x {pprice.min:F2}€ = {tprice.min:F2}€<br/>
+                {parts.Count} x {pprice.avg:F2}€ = {tprice.avg:F2}€<br/>
+                {parts.Count} x {pprice.max:F2}€ = {tprice.max:F2}€</td>
         </tr>
     </table>
 </li>");
@@ -281,16 +240,16 @@ ________________________________________________________________________________
                 #endregion
                 #region PRICE + DEBUG
 
-                if (tprice.min != float.NaN) total.min += tprice.min;
-                if (tprice.avg != float.NaN) total.avg += tprice.avg;
-                if (tprice.max != float.NaN) total.max += tprice.max;
-
+                if (!float.IsNaN(tprice.min)) total.min += tprice.min;
+                if (!float.IsNaN(tprice.avg)) total.avg += tprice.avg;
+                if (!float.IsNaN(tprice.max)) total.max += tprice.max;
+                
                 partcnt -= parts.Count;
 
                 ++partno;
                 
                 if ((int)(partno % (listcnt / 400f)) == 0)
-                    Print($"{100f * partno / listcnt:N3}% generated ({partno}/{listcnt})");
+                    Print($"{100f * partno / listcnt:N3}% generated ({partno}/{listcnt}).   Current price: ~{total.avg:N2} EUR");
 
                 #endregion
             }
@@ -336,12 +295,17 @@ ________________________________________________________________________________
             using (StreamReader sr = new StreamReader(ms, Encoding.UTF8))
                 css = new SassCompiler().Compile(sr.ReadToEnd(), OutputStyle.Compressed, true);
 
+            int brickcount = lxfml.Bricks.Brick.Length;
+
             return Resources.template.DFormat(new Dictionary<string, object>
             {
                 ["style"] = css,
                 ["model_price_min"] = $"{total.min:F2}€",
                 ["model_price_avg"] = $"{total.avg:F2}€",
                 ["model_price_max"] = $"{total.max:F2}€",
+                ["price_per_brick_min"] = $"{total.min / brickcount:F3}€",
+                ["price_per_brick_avg"] = $"{total.avg / brickcount:F3}€",
+                ["price_per_brick_max"] = $"{total.max / brickcount:F3}€",
                 ["timestamp"] = DateTime.Now.ToString("dd. MMM yyyy - HH:mm:ss.ffffff"),
                 ["model_path"] = opt["in"],
                 ["model_name"] = lxfml.name,
@@ -350,7 +314,7 @@ ________________________________________________________________________________
                 ["thumbnail"] = thumbnail,
                 ["bricks"] = sb.ToString(),
                 ["bricklist_count"] = listcnt,
-                ["brick_count"] = lxfml.Bricks.Brick.Length,
+                ["brick_count"] = brickcount,
             });
 
             #endregion
@@ -422,6 +386,37 @@ ________________________________________________________________________________
             }
 
             sb.ToString().Err();
+        }
+
+
+        private struct LXFMLBrickGrouping
+        {
+            public int DesignID { get; }
+            public short[] Material { get; }
+            public short[] Decoration { get; }
+
+            private short[] mat => Material.Distinct().ToArray();
+            private short[] dec => Material.Distinct().ToArray();
+
+
+            public override bool Equals(object obj) =>
+                obj is LXFMLBrickGrouping g ? g.GetHashCode() == GetHashCode() : false;
+
+            public override int GetHashCode()
+            {
+                uint hc = (uint)(mat.Length ^ (dec.Length << 16));
+
+                for (int i = 0; i < Math.Min(mat.Length, dec.Length); ++i)
+                {
+                    hc = (hc << 1) | (hc >> 31);
+                    hc ^= (ushort)mat[i] | ((uint)dec[i] << 16);
+                }
+
+                return (int)hc ^ ~DesignID;
+            }
+
+            public LXFMLBrickGrouping(int id, short[] mat, short[] dec) =>
+                (DesignID, Material, Decoration) = (id, mat, dec);
         }
     }
 }

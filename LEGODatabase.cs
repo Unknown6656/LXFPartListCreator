@@ -16,13 +16,15 @@ using System.IO;
 using System;
 
 using CsQuery;
+using System.Net.NetworkInformation;
 
-namespace LXFPartListCreator
+namespace LXF
 {
     public interface ILEGODatabase
         : IDisposable
     {
         string Name { get; }
+        bool CanOperate { get; }
         bool IsDisposed { get; }
         long CacheExpriration { get; } // expiration in seconds
         LEGODatabaseManager Manager { get; }
@@ -53,8 +55,8 @@ namespace LXFPartListCreator
     public interface ILEGOImageDatabase
         : ILEGODatabase
     {
-        string GetImageByPartID(int? partID);
-        string GetImageByDesignID(int designID, int colorID = -1);
+        string GetImageByPartID(int? partID, Func<Bitmap, Bitmap> postproc2 = null);
+        string GetImageByDesignID(int designID, int colorID = -1, Func<Bitmap, Bitmap> postproc2 = null);
 
         void ClearImages();
     }
@@ -86,13 +88,14 @@ namespace LXFPartListCreator
         public abstract BrickInfo this[int ID] { internal set; get; }
         
         public abstract long CacheExpriration { get; }
-        
+
+        public abstract bool CanOperate { get; }
 
         public abstract ColorInfo GetColor(int ID);
 
-        public abstract string GetImageByPartID(int? partID);
+        public abstract string GetImageByPartID(int? partID, Func<Bitmap, Bitmap> postproc2 = null);
 
-        public abstract string GetImageByDesignID(int designID, int colorID = -1);
+        public abstract string GetImageByDesignID(int designID, int colorID = -1, Func<Bitmap, Bitmap> postproc2 = null);
 
         protected abstract void InternalDispose();
 
@@ -226,6 +229,19 @@ partsListFormat=Images;
 
         public override long CacheExpriration => long.MaxValue;
 
+        public override bool CanOperate
+        {
+            get
+            {
+                bool co = true;
+
+                foreach (ILEGODatabase prov in providers)
+                    co &= prov?.CanOperate ?? true;
+
+                return co;
+            }
+        }
+
         public ILEGODatabase GetProvider(string name) => GetProviders(name).FirstOrDefault();
 
         public ILEGODatabase[] GetProviders(string name) => providers.Where(p => p?.Name == name).ToArray();
@@ -238,9 +254,9 @@ partsListFormat=Images;
 
         public override ColorInfo GetColor(int ID) => EachF(p => p.GetColor(ID));
 
-        public override string GetImageByPartID(int? partID) => EachF(p => p.GetImageByPartID(partID));
+        public override string GetImageByPartID(int? partID, Func<Bitmap, Bitmap> postproc2 = null) => EachF(p => p.GetImageByPartID(partID, postproc2));
 
-        public override string GetImageByDesignID(int designID, int colorID = -1) => EachF(p => p.GetImageByDesignID(designID, colorID));
+        public override string GetImageByDesignID(int designID, int colorID = -1, Func<Bitmap, Bitmap> postproc2 = null) => EachF(p => p.GetImageByDesignID(designID, colorID, postproc2));
 
         protected override void InternalDispose()
         {
@@ -295,7 +311,7 @@ partsListFormat=Images;
 
         private void Each(Action<LEGODatabaseProvider> f) => Each<LEGODatabaseProvider>(f);
 
-        public void AddProvider(ILEGODatabase provider) => Exec(() =>
+        public ILEGODatabase AddProvider(ILEGODatabase provider) => Exec(() =>
         {
             if (provider != null)
                 if (!providers.Contains(provider))
@@ -309,11 +325,15 @@ partsListFormat=Images;
                     catch
                     {
                     }
+
+                    return provider;
                 }
+
+            return null;
         });
 
-        public void AddProvider<T>()
-            where T : class, ILEGODatabase => AddProvider(Activator.CreateInstance(typeof(T), dbdir.FullName, this) as ILEGODatabase);
+        public T AddProvider<T>()
+            where T : class, ILEGODatabase => AddProvider(Activator.CreateInstance(typeof(T), dbdir.FullName, this) as ILEGODatabase) as T;
 
         public LEGODatabaseManager(string dir)
             : base(dir, null) => Print("Manager initialized");
@@ -334,6 +354,9 @@ partsListFormat=Images;
         internal Dictionary<int, ColorInfo> colors = new Dictionary<int, ColorInfo>();
         internal Dictionary<int, BrickInfo> bricks = new Dictionary<int, BrickInfo>();
 
+
+        public Func<Bitmap, Bitmap> BitmapPreprocessor { set; private get; }
+        public Func<Bitmap, Bitmap> BitmapPostprocessor { set; private get; }
 
         public override BrickInfo this[int ID]
         {
@@ -362,24 +385,43 @@ partsListFormat=Images;
 
         public override long CacheExpriration => CACHE_EXP;
 
+        public override bool CanOperate
+        {
+            get
+            {
+                using (Ping p = new Ping())
+                    return p.Send(Name).Status == IPStatus.Success;
+            }
+        }
+
         public override ColorInfo GetColor(int ID) => Exec(() => colors.ContainsKey(ID) ? colors[ID] : null);
 
-        public override string GetImageByDesignID(int designID, int colorID = -1) => Exec(() =>
+        public override string GetImageByDesignID(int designID, int colorID = -1, Func<Bitmap, Bitmap> postproc2 = null) => Exec(() =>
         {
             BrickInfo nfo = this[designID];
             BrickVariation v = nfo?.Variations?.FirstOrDefault(var => var?.ColorID == colorID) ?? nfo?.Variations?.FirstOrDefault();
 
-            return GetImageByPartID(v?.PartID);
+            return GetImageByPartID(v?.PartID, postproc2);
         });
 
-        public override string GetImageByPartID(int? partID) => Exec(() =>
+        public override string GetImageByPartID(int? partID, Func<Bitmap, Bitmap> postproc2 = null) => Exec(() =>
         {
             if (partID is int id)
             {
                 if (!IsPartID(id))
                     id = this[id]?.Variations?.FirstOrDefault()?.PartID ?? -1;
-                
-                return id < 0 ? "" : ImgGetB64(string.Format(dbdir.FullName + '/' + FILE_IMAGE, id));
+
+                string path = string.Format(dbdir.FullName + '/' + FILE_IMAGE, id);
+                string b64 = File.Exists(path) ? ImgGetB64(path, postproc2) : null;
+
+                if (string.IsNullOrWhiteSpace(b64))
+                {
+                    AddUpdate(GetDesignID(id));
+
+                    return GetImageByDesignID(id, postproc2: postproc2);
+                }
+
+                return id < 0 ? "" : b64;
             }
             else
                 return "";
@@ -387,19 +429,24 @@ partsListFormat=Images;
 
         internal int GetDesignID(int partID)
         {
-            var pids = from b in bricks
-                       where b.Value.Variations?.Any(v => v?.PartID == partID) ?? false
-                       select b.Key;
-
-            if (pids.Any())
-                return pids.First();
-            else
+            if (IsPartID(partID))
             {
-                CQ dom = DownloadString(string.Format(URL_PART, partID));
-                var id = dom["section.main img.partimage[alt]"][0]["alt"];
+                var pids = from b in bricks
+                           where b.Value.Variations?.Any(v => v?.PartID == partID) ?? false
+                           select b.Key;
 
-                return int.Parse(id);
+                if (pids.Any())
+                    return pids.First();
+                else
+                {
+                    CQ dom = DownloadString(string.Format(URL_PART, partID));
+                    var id = dom["section.main img.partimage[alt]"][0]["alt"];
+
+                    return int.Parse(id);
+                }
             }
+            else
+                return partID;
         }
 
         private void AddUpdate(int designID)
@@ -492,7 +539,7 @@ partsListFormat=Images;
             return vlist.OrderBy(v => v.ColorID).ToArray();
         }
 
-        private string ImgGetB64(string path)
+        private string ImgGetB64(string path, Func<Bitmap, Bitmap> postproc2 = null)
         {
             using (Bitmap bmp = Image.FromFile(path) as Bitmap)
             using (MemoryStream ms = new MemoryStream())
@@ -511,10 +558,13 @@ partsListFormat=Images;
 
                     AddUpdate(did);
 
-                    return ImgGetB64(path);
+                    return ImgGetB64(path, postproc2);
                 }
 
-                bmp.Save(ms, ImageFormat.Png);
+                Bitmap res = BitmapPostprocessor?.Invoke(bmp) ?? bmp;
+                
+                using (res = postproc2?.Invoke(res) ?? res)
+                    res.Save(ms, ImageFormat.Png);
 
                 return $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
             }
@@ -546,7 +596,19 @@ partsListFormat=Images;
             FileInfo path = new FileInfo(dbdir.FullName + '/' + string.Format(FILE_IMAGE, partID));
 
             if (!path.Exists)
+            {
                 DownloadFile(uri.Replace("/1/", "/2/"), path.FullName);
+
+                string tmp = $"{path.FullName}/../{Guid.NewGuid():D}.tmp";
+
+                using (Bitmap src = Image.FromFile(path.FullName) as Bitmap)
+                using (Bitmap res = BitmapPreprocessor?.Invoke(src) ?? src)
+                    res.Save(tmp, ImageFormat.Png);
+
+                path.Delete();
+
+                File.Move(tmp, path.FullName);
+            }
         }
 
         protected override void InternalDispose()
@@ -602,37 +664,40 @@ partsListFormat=Images;
 
         public override void LoadMerge()
         {
-            BrickDB db;
+            if (dbnfo.Exists)
+            {
+                BrickDB db;
 
-            using (FileStream fs = dbnfo.OpenRead())
-                db = ser.Deserialize(fs) as BrickDB;
+                using (FileStream fs = dbnfo.OpenRead())
+                    db = ser.Deserialize(fs) as BrickDB;
 
-            foreach (BrickInfo b in db?.Bricks ?? new BrickInfo[0])
-                if (b != null)
-                    if (bricks.ContainsKey(b.DesignID))
-                    {
-                        if (b.FetchDate > bricks[b.DesignID].FetchDate)
+                foreach (BrickInfo b in db?.Bricks ?? new BrickInfo[0])
+                    if (b != null)
+                        if (bricks.ContainsKey(b.DesignID))
+                        {
+                            if (b.FetchDate > bricks[b.DesignID].FetchDate)
+                                bricks[b.DesignID] = b;
+                        }
+                        else
                             bricks[b.DesignID] = b;
-                    }
-                    else
-                        bricks[b.DesignID] = b;
 
-            foreach (ColorInfo c in db.Colors ?? new ColorInfo[0])
-                if (c != null)
-                    colors[c.ID] = c;
+                foreach (ColorInfo c in db.Colors ?? new ColorInfo[0])
+                    if (c != null)
+                        colors[c.ID] = c;
 
-            long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
+                long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
 
-            foreach (int id in bricks.Keys.ToArray())
-                if ((bricks[id].FetchDate < now))
-                    AddUpdate(id);
+                foreach (int id in bricks.Keys.ToArray())
+                    if ((bricks[id].FetchDate < now))
+                        AddUpdate(id);
 
-            foreach (int id in colors.Keys.ToArray())
-                if (colors[id].FetchDate < now)
-                    AddUpdate(id);
+                foreach (int id in colors.Keys.ToArray())
+                    if (colors[id].FetchDate < now)
+                        AddUpdate(id);
 
-            Print($"{bricks.Count} bricks loaded.");
-            Print($"{colors.Count} colors loaded.");
+                Print($"{bricks.Count} bricks loaded.");
+                Print($"{colors.Count} colors loaded.");
+            }
         }
         
         private T TryWebAction<T>(Func<T> f, int count = 3, int timeout = 9000)
@@ -707,6 +772,14 @@ partsListFormat=Images;
 
         internal BricksetDotCom Brickset => Manager.GetProvider<BricksetDotCom>();
 
+        public bool CanOperate
+        {
+            get
+            {
+                using (Ping p = new Ping())
+                    return p.Send(Name).Status == IPStatus.Success;
+            }
+        }
 
         public BrickowlDotCom(string dir, LEGODatabaseManager manager)
         {
@@ -775,10 +848,7 @@ partsListFormat=Images;
                 long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
 
 
-                if ((prc.Min != float.NaN) &&
-                    (prc.Avg != float.NaN) &&
-                    (prc.Max != float.NaN) &&
-                    (prc.Date >= now))
+                if (!float.IsNaN(prc.Min) && !float.IsNaN(prc.Avg) && !float.IsNaN(prc.Max) && (prc.Date >= now))
                     return;
             }
 
@@ -816,11 +886,11 @@ partsListFormat=Images;
                 if (!float.TryParse(hi, out float p_hi))
                     p_hi = float.NaN;
 
-                if (p_lo != float.NaN)
+                if (!float.IsNaN(p_lo))
                 {
                     p_avg = p_lo;
 
-                    if (p_hi != float.NaN)
+                    if (!float.IsNaN(p_hi))
                         p_avg = (p_avg * .85f) + (p_hi * .15f);
                 }
                 else

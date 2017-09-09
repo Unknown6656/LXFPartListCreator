@@ -2,6 +2,26 @@
     @return #{ "grayscale(" + $amount + ")" };
 }
 
+@mixin border-radius($radius) {
+    -webkit-border-radius: $radius;
+       -moz-border-radius: $radius;
+        -ms-border-radius: $radius;
+         -o-border-radius: $radius;
+            border-radius: $radius;
+}
+
+@mixin transition($value) {
+    -webkit-transition: $value;
+       -moz-transition: $value;
+        -ms-transition: $value;
+         -o-transition: $value;
+            transition: $value;
+}
+
+* {
+    @include transition(all .3s);
+}
+
 body {
     font-family: Ubuntu, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     align-content: center;
@@ -15,10 +35,10 @@ svg {
 }
 
 div#content {
+    @include border-radius(20px);
     background-color: #cdf;
     border: 1px solid #888;
     align-content: center;
-    border-radius: 20px;
     text-align: center;
     margin-right: auto;
     margin-left: auto;
@@ -33,12 +53,28 @@ div#content > * {
 }
 
 table#meta {
+    $border-hclr: #999;
+    $border-vclr: #bbb;
+
     border-collapse: collapse;
     width: 100%;
 
+    tbody {
+        border-top: 1px solid $border-hclr;
+    }
+
     th, td {
-        border-bottom: 1px solid #999;
+        border-bottom: 1px solid $border-hclr;
         padding: 3px;
+    }
+
+    td:first-of-type {
+        padding-right: 6px;
+    }
+
+    td:last-of-type {
+        border-left: 1px solid $border-vclr;
+        padding-left: 6px;
     }
 
     tr {
@@ -82,7 +118,7 @@ ul#list {
         div.img[count] {
             background-color: transparent;
             background-size: contain;
-            border-radius: 10px;
+            @include border-radius(10px);
             position: relative;
             display: block;
             height: 72px;
@@ -93,7 +129,7 @@ ul#list {
             content: attr(count) 'x';
             box-shadow: 0px 0px 6px rgba(255,255,255,0.3);
             background-color: rgba(255,255,255,0.3);
-            border-radius: inherit;
+            @include border-radius(inherit);
             vertical-align: bottom;
             position: absolute;
             text-align: right;
@@ -117,6 +153,10 @@ ul#list {
             height: 100%;
             width: 100%;
         }
+    }
+
+    li:hover {
+        background-color: #bce;
     }
 }
 

@@ -6,7 +6,7 @@ using System.Xml.Schema;
 using System.Linq;
 using System;
 
-namespace LXFPartListCreator
+namespace LXF
 {
     using static XmlSchemaForm;
 
@@ -150,38 +150,38 @@ namespace LXFPartListCreator
         [XmlAttribute]
         public int designID { set; get; }
         [XmlIgnore]
-        public int[] materials { get; set; }
+        public short[] materials { get; set; }
         [XmlIgnore]
-        public int[] decoration { get; set; }
+        public short[] decoration { get; set; }
         [XmlAttribute(nameof(materials))]
         public string materialsText
         {
-            get => string.Join(",", materials ?? new int[0]);
+            get => string.Join(",", materials ?? new short[0]);
             set
             {
                 try
                 {
-                    materials = value.Split(',').Select(int.Parse).ToArray();
+                    materials = value.Split(',').Select(short.Parse).ToArray();
                 }
                 catch
                 {
-                    materials = new int[0];
+                    materials = new short[0];
                 }
             }
         }
         [XmlAttribute(nameof(decoration))]
         public string decorationText
         {
-            get => string.Join(",", decoration ?? new int[0]);
+            get => string.Join(",", decoration ?? new short[0]);
             set
             {
                 try
                 {
-                    decoration = value.Split(',').Select(int.Parse).ToArray();
+                    decoration = value.Split(',').Select(short.Parse).ToArray();
                 }
                 catch
                 {
-                    decoration = new int[0];
+                    decoration = new short[0];
                 }
             }
         }

@@ -34,7 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>LXFPartListCreator.Program</StartupObject>
+    <StartupObject>LXF.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CsQuery">
@@ -56,6 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ImageCleanup.cs" />
     <Compile Include="LEGODatabase.cs" />
     <Compile Include="LXFML.cs" />
     <Compile Include="lxfml.Designer.cs">

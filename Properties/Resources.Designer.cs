@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace LXFPartListCreator.Properties {
+namespace LXF.Properties {
     using System;
     
     
