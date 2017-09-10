@@ -1,6 +1,7 @@
 ﻿// #define USE_OLD_BRICKOWL_IMPL
 
 using System.Text.RegularExpressions;
+using System.Net.NetworkInformation;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.Threading.Tasks;
@@ -16,7 +17,6 @@ using System.IO;
 using System;
 
 using CsQuery;
-using System.Net.NetworkInformation;
 
 namespace LXF
 {

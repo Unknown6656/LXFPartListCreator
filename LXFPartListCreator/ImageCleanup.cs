@@ -71,7 +71,7 @@ namespace LXF
 
             byte[,] iα = new byte[wx, hx];
             double diag = Sqrt(wx * wx + hx * hx) / 2;
-            const byte α_THRESHOLD = 20;
+            const byte α_THRESHOLD = 30;
 
             for (double θ = 0, rs = 1 / diag, θs = Atan(rs) / 3; θ < PI * 2; θ += θs)
                 for (double r = 1; r >= 0; r -= rs)
@@ -116,14 +116,35 @@ namespace LXF
     }
 
     [Serializable, StructLayout(LayoutKind.Sequential, Size = 4, Pack = 1), NativeCppClass]
-    internal struct ARGB
+    internal unsafe struct ARGB
     {
         public byte B;
         public byte G;
         public byte R;
         public byte A;
 
+        private float cmax => Max(R, Max(G, B));
+        private float cmin => Min(R, Min(G, B));
+        private float δ => cmax - cmin;
+
+        public float this[uint ndx]
+        {
+            set
+            {
+                fixed (ARGB* ptr = &this)
+                    *((byte*)ptr + (2 - ndx) % 4) = (byte)(value * 255);
+            }
+            get
+            {
+                fixed (ARGB* ptr = &this)
+                    return *((byte*)ptr + (2 - ndx) % 4) / 255f;
+            }
+        }
+
         public float Gray => (R + G + B) / 3f;
+        public float Lightness => (cmax + cmin) / 2;
+        public float Saturation => δ == 0 ? 0 : δ / (1 - Abs(2 * Lightness - 1));
+        public float Deviation => Abs(Gray - R) + Abs(Gray - G) + Abs(Gray - B) / 3;
 
         public override string ToString() => $"#{A:x2}{R:x2}{G:x2}{B:x2}";
 
@@ -145,6 +166,23 @@ namespace LXF
                 R = (byte)((hex >> 16) & 0xff),
                 G = (byte)((hex >> 8) & 0xff),
                 B = (byte)(hex & 0xff),
+            };
+
+        public static implicit operator float[](ARGB col) => new float []
+        {
+            col.R / 255f,
+            col.G / 255f,
+            col.B / 255f,
+            col.A / 255f,
+        };
+
+        public static implicit operator ARGB(float[] rgba) =>
+            new ARGB
+            {
+                R = (byte)(rgba[0] * 255),
+                G = (byte)(rgba[1] * 255),
+                B = (byte)(rgba[2] * 255),
+                A = (byte)(rgba[3] * 255),
             };
     }
 }

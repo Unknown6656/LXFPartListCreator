@@ -18,10 +18,11 @@ namespace LXF
 {
     using static ConsoleColor;
     using static Console;
+    using static Math;
 
     using Properties;
 
-    public static class Program
+    public static unsafe class Program
     {
         public const string PATH_CACHE = "part-cache";
         public const string PATH_LXFML = "IMAGE100.LXFML";
@@ -203,11 +204,34 @@ ________________________________________________________________________________
                 string rgbclr = color?.RGB ?? "transparent";
                 (float min, float avg, float max) pprice = (bvar2?.PriceMin ?? float.NaN, bvar2?.PriceAvg ?? float.NaN, bvar2?.PriceMax ?? float.NaN);
                 (float min, float avg, float max) tprice = (parts.Count * pprice.min, parts.Count * pprice.avg, parts.Count * pprice.max);
-                string png = db.GetImageByPartID(bvar2?.PartID ?? parts.ID, bmp =>
+                string png = db.GetImageByPartID(bvar2?.PartID ?? parts.ID, src =>
                 {
-                    // TODO : colorize
+                    int w = src.Width;
+                    int h = src.Height;
+                    Bitmap dst = new Bitmap(w, h, src.PixelFormat);
+                    BitmapData dsrc = src.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, src.PixelFormat);
+                    BitmapData ddst = dst.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadWrite, dst.PixelFormat);
+                    ARGB* psrc = (ARGB*)dsrc.Scan0;
+                    ARGB* pdst = (ARGB*)ddst.Scan0;
+                    ARGB clr = color.RGBAValues;
+                    double φ(double x) => .5 - Pow(2 * x - 1, 2);
+                    
+                    Parallel.For(0, w * h, i =>
+                    {
+                        double gr = psrc[i].Gray / 255d;
+                        double intp = φ(gr);
+                        double cintp = (1 - intp) * gr;
 
-                    return bmp;
+                        pdst[i].A = psrc[i].A;
+                        pdst[i].R = (byte)Min(255, 255 * (intp * clr[0] + cintp));
+                        pdst[i].G = (byte)Min(255, 255 * (intp * clr[1] + cintp));
+                        pdst[i].B = (byte)Min(255, 255 * (intp * clr[2] + cintp));
+                    });
+                    
+                    src.UnlockBits(dsrc);
+                    dst.UnlockBits(ddst);
+
+                    return dst;
                 }) ?? "";
                 
                 #endregion
@@ -218,7 +242,7 @@ ________________________________________________________________________________
     <table border=""0"" width=""100%"">
         <tr width=""100%"">
             <td class=""td1"">
-                <div class=""img"" count=""{parts.Count}"" style=""background-image: url('{png}');""/>
+                <div class=""img"" count=""{parts.Count}"" style=""background-image: url('{png}'); filter: drop-shadow(0px 0px 6px {color?.RGB ?? "transparent"});""/>
             </td>
             <td>
                 <h2>{part?.Name ?? $"&lt;{parts.ID}&gt;"} &nbsp; - &nbsp; {color?.Name}</h2>
@@ -249,7 +273,7 @@ ________________________________________________________________________________
                 ++partno;
                 
                 if ((int)(partno % (listcnt / 400f)) == 0)
-                    Print($"{100f * partno / listcnt:N3}% generated ({partno}/{listcnt}).   Current price: ~{total.avg:N2} EUR");
+                    Print($"{100f * partno / listcnt:N3}% generated ({partno}/{listcnt}).   Current price: {total.min:N2} EUR ... {total.avg:N2} EUR ... {total.max:N2} EUR");
 
                 #endregion
             }
