@@ -86,7 +86,7 @@ namespace LXF
         public LEGODatabaseManager Manager { internal set; get; }
 
         public abstract BrickInfo this[int ID] { internal set; get; }
-        
+
         public abstract long CacheExpriration { get; }
 
         public abstract bool CanOperate { get; }
@@ -201,7 +201,11 @@ partsSortOrder=setcount;
 partsListFormat=Images;
 ".Replace('\n', ' ').Replace('\r', ' ').Trim(); // yeah, cookies!
         }
-        
+
+        public ILEGODatabase this[ILEGODatabase prov] => this[prov.GetType()];
+
+        public ILEGODatabase this[Type prov] => providers.FirstOrDefault(p => prov.IsAssignableFrom(p.GetType()));
+
         private readonly List<ILEGODatabase> providers = new List<ILEGODatabase>();
 
         public override string Name => "Database manager";
@@ -368,7 +372,7 @@ partsListFormat=Images;
                 if (!bricks.ContainsKey(ID))
                     AddUpdate(ID);
 
-                return bricks[ID];
+                return bricks.ContainsKey(ID) ? bricks[ID] : null;
             }
             internal set
             {
@@ -380,6 +384,8 @@ partsListFormat=Images;
                 Save();
             }
         }
+
+        public BrickowlDotCom Brickowl => Manager[typeof(BrickowlDotCom)] as BrickowlDotCom;
 
         public override string Name => "brickset.com";
 
@@ -393,6 +399,77 @@ partsListFormat=Images;
                     return p.Send(Name).Status == IPStatus.Success;
             }
         }
+
+        public ColorInfo FindColor(string input) => Exec(() =>
+        {
+            int hamming(string s1, string s2) => s1.Zip(s2, (l, r) => l - r == 0 ? 0 : 1).Sum();
+            int levenshtein(string s, string t)
+            {
+                int n = s.Length;
+                int m = t.Length;
+                int[,] d = new int[n + 1, m + 1];
+
+                if (n == 0)
+                    return m;
+                else if (m == 0)
+                    return n;
+
+                for (int i = 0; i <= n; d[i, 0] = i++) ;
+                for (int j = 0; j <= m; d[0, j] = j++) ;
+
+                for (int i = 1; i <= n; i++)
+                    for (int j = 1; j <= m; j++)
+                    {
+                        int cost = t[j - 1] == s[i - 1] ? 0 : 1;
+
+                        d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
+                    }
+
+                return d[n, m];
+            }
+
+            ColorInfo clr = colors.Values.FirstOrDefault(c => input.Equals(c.Name, StringComparison.InvariantCultureIgnoreCase));
+            string[] frags = input.Split(' ');
+
+            return clr ?? (from c in colors.Values
+                           let name = c?.Name
+                           where name != null
+                           let nfrags = name.Split(' ')
+                           where nfrags.Length == frags.Length
+                           let comp = nfrags.Length == frags.Length ? (from i in Enumerable.Range(0, nfrags.Length)
+                                                                       let n_i = nfrags[i]
+                                                                       let c_i = frags[i]
+                                                                       let ham = hamming(n_i, c_i)
+                                                                       where ham < (n_i.Length + 1) / 2
+                                                                       where ham < (c_i.Length + 1) / 2
+                                                                       let lev = levenshtein(n_i, c_i)
+                                                                       where lev < (n_i.Length + 1) / 2
+                                                                       where lev < (c_i.Length + 1) / 2
+                                                                       select new
+                                                                       {
+                                                                           Hamming = ham,
+                                                                           Levenshtein = lev
+                                                                       }).ToArray() : new[] {
+                                                                           new
+                                                                           {
+                                                                               Hamming = hamming(name, input),
+                                                                               Levenshtein = levenshtein(name, input)
+                                                                           }
+                                                                       }
+                           where nfrags.Length == frags.Length ? comp.Length == frags.Length : (comp[0].Hamming < name.Length / 3) &&
+                                                                                               (comp[0].Hamming < input.Length / 3) &&
+                                                                                               (comp[0].Levenshtein < name.Length / 3) &&
+                                                                                               (comp[0].Levenshtein < input.Length / 3)
+                           let dist = Math.Sqrt(Math.Pow(comp.Sum(c => c.Hamming), 2) + Math.Pow(comp.Sum(c => c.Levenshtein), 2))
+                           orderby dist ascending
+                           // orderby ham ascending
+                           select new
+                           {
+                               // Hamming = ham,
+                               // Levenshtein = lev,
+                               Color = c
+                           }).FirstOrDefault()?.Color;
+        });
 
         public override ColorInfo GetColor(int ID) => Exec(() => colors.ContainsKey(ID) ? colors[ID] : null);
 
@@ -409,7 +486,21 @@ partsListFormat=Images;
             if (partID is int id)
             {
                 if (!IsPartID(id))
-                    id = this[id]?.Variations?.FirstOrDefault()?.PartID ?? -1;
+                {
+                    int nid = this[id]?.Variations?.FirstOrDefault()?.PartID ?? -1;
+
+                    if (nid == -1)
+                    {
+                        BrickInfo brick = Brickowl.FetchBrick(id);
+
+                        if (brick != null)
+                            this[brick.DesignID] = brick;
+
+                        id = brick?.Variations?.FirstOrDefault()?.PartID ?? -1;
+                    }
+                    else
+                        id = nid;
+                }
 
                 string path = string.Format(dbdir.FullName + '/' + FILE_IMAGE, id);
                 string b64 = File.Exists(path) ? ImgGetB64(path, postproc2) : null;
@@ -453,35 +544,44 @@ partsListFormat=Images;
         {
             try
             {
-                Print($"Fetching design No.{designID} ...");
+                BrickInfo bi;
 
-                string html = DownloadString(string.Format(URL_DESIGN, designID));
-                CQ dom = html;
-
-                if (html is null)
-                    Debugger.Break();
-
-                var cs_iteminfo = "section.main div.iteminfo";
-
-                var iteminfo = dom[cs_iteminfo];
-                var col2 = dom[cs_iteminfo + " div.col"].ToList()?[1].Cq();
-                var name = col2.Find("h1")[0].InnerHTML + "<br/>";
-                var table = col2.Find("dd").ToList();
-                var vars_raw = dom["section.main div.partlist > ul li.item"].ToList().ToArray() ?? new IDomObject[0];
-                BrickVariation[] vars;
-
-                name = name.Remove(name.ToLower().IndexOf("<br"));
-
-                this[designID] = new BrickInfo
+                if (designID == -1)
+                    bi = Brickowl?.FetchBrick(designID);
+                else
                 {
-                    Name = name,
-                    DesignID = designID,
-                    ProductionDate = GetYear(table[2].TextContent),
-                    Variations = vars = FetchVariations(vars_raw),
-                    FetchDate = (vars_raw.Length - vars.Length) > 0 ? -1 : DateTime.Now.Ticks,
-                };
+                    Print($"Fetching design No.{designID} ...");
 
-                Manager.GetProvider<BrickowlDotCom>()?.UpdatePrice(designID);
+                    string html = DownloadString(string.Format(URL_DESIGN, designID));
+                    CQ dom = html;
+                    
+                    var cs_iteminfo = "section.main div.iteminfo";
+                    var iteminfo = dom[cs_iteminfo];
+                    var col2 = dom[cs_iteminfo + " div.col"].ToList()?[1].Cq();
+                    var name = col2.Find("h1")[0].InnerHTML + "<br/>";
+                    var table = col2.Find("dd").ToList();
+                    var vars_raw = dom["section.main div.partlist > ul li.item"].ToList().ToArray() ?? new IDomObject[0];
+                    BrickVariation[] vars;
+
+                    name = name.Remove(name.ToLower().IndexOf("<br"));
+                    
+                    bi = string.IsNullOrWhiteSpace(name) ? Brickowl?.FetchBrick(designID) : new BrickInfo
+                    {
+                        Name = name,
+                        DesignID = designID,
+                        ProductionDate = GetYear(table[2].TextContent),
+                        Variations = vars = FetchVariations(vars_raw),
+                        FetchDate = (vars_raw.Length - vars.Length) > 0 ? -1 : DateTime.Now.Ticks,
+                    };
+                }
+
+                if (bi != null)
+                {
+                    if (bi.DesignID > 0)
+                        this[bi.DesignID] = bi;
+
+                    Manager.GetProvider<BrickowlDotCom>()?.UpdatePrice(bi.DesignID);
+                }
             }
             catch (Exception ex)
             {
@@ -589,7 +689,7 @@ partsListFormat=Images;
                 };
         }
 
-        private void DownloadImage(string uri, int partID)
+        internal void DownloadImage(string uri, int partID)
         {
             Print($"Fetching image for {partID}...");
 
@@ -688,7 +788,9 @@ partsListFormat=Images;
                 long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
 
                 foreach (int id in bricks.Keys.ToArray())
-                    if ((bricks[id].FetchDate < now))
+                    if ((id <= 0) || (bricks[id]?.Variations == null))
+                        bricks.Remove(id);
+                    else if ((bricks[id].FetchDate < now))
                         AddUpdate(id);
 
                 foreach (int id in colors.Keys.ToArray())
@@ -739,6 +841,9 @@ partsListFormat=Images;
 
         private void DownloadFile(string url, string path) => TryWebAction(() =>
         {
+            if (url.StartsWith("//"))
+                url = "http:" + url;
+
             Manager.WebClient.DownloadFile(url, path);
 
             return null as object;
@@ -781,13 +886,125 @@ partsListFormat=Images;
             }
         }
 
-        public BrickowlDotCom(string dir, LEGODatabaseManager manager)
+        private (int Design, int Part) FetchID(int ID) =>
+            (LEGODatabaseProvider.IsPartID(ID) ? Brickset.GetDesignID(ID) : ID, Brickset[ID]?.Variations?.FirstOrDefault()?.PartID ?? ID);
+
+        private (CQ dom, int DesignID, int PartID) SearchFor(int ID, bool use_brickset = true)
         {
-            Manager = manager;
-            
-            Load();
+            (int desg_id, int part_id) = use_brickset ? FetchID(ID) : (ID, ID);
+
+            Print($"Searching for {ID}...");
+
+            CQ dom = Manager.WebClient.DownloadString(string.Format(URL_SEARCH, part_id > 0 ? part_id : desg_id));
+            string piece_url = dom["ul.category-grid a.category-item-image[href]"].Attr("href");
+
+            return (Manager.WebClient.DownloadString("http://www.brickowl.com" + piece_url), desg_id, part_id);
         }
 
+        public BrickInfo FetchBrick(int ID)
+        {
+            if (ID > 0)
+                try
+                {
+                    (CQ dom, int _, int _) = SearchFor(ID, false);
+
+                    Print($"Fetching brick data for {ID}...");
+
+                    var meta = dom["#item-right"];
+                    var title = dom["#page-title.title.item.name"].Text();
+
+                    if (title.match(@"(?<name>.*)\([0-9_\-\s\\\/]+\)", out Match m))
+                        title = m.Groups["name"].ToString();
+
+                    title = title.Replace("LEGO", "").Trim();
+
+                    var cat = meta.Find("p a[href]").Text();
+                    var props = meta.Find("div").ToList();
+                    var prod_dt = (from Match ma in Regex.Matches(props[0].Cq().Text(), @"(\b|\s)+[0-9]{4}(\b|\s)+")
+                                   select int.Parse(ma.ToString())).ToArray();
+                    var des_id_node = meta.Clone()
+                                          .Children()
+                                          .Remove()
+                                          .End()
+                                          .Html(); // see https://stackoverflow.com/a/8851526/3902603 for the black magic involved
+
+                    des_id_node = trimat(des_id_node, "Peeron");
+                    des_id_node = trimat(des_id_node, "BOID");
+
+                    int desid = (from Match ma in Regex.Matches(des_id_node, @"(\b|\s)+[0-9]{5,8}(\b|\s)+")
+                                 select int.Parse(ma.ToString())).Concat(new[] { -1 }).First();
+
+                    string trimat(string src, string frag)
+                    {
+                        int ndx = src.ToLower().IndexOf(frag.ToLower());
+
+                        if (ndx >= 0)
+                            src = src.Remove(ndx);
+
+                        return src;
+                    }
+                    BrickInfo brick = new BrickInfo
+                    {
+                        Name = title,
+                        DesignID = desid,
+                        Category = cat,
+                        ProductionDate = prod_dt,
+                        FetchDate = DateTime.Now.Ticks,
+                    };
+
+                    FetchVariations(ref brick, dom);
+                
+                    return brick;
+                }
+                catch (Exception ex)
+                {
+                    ex.Err();
+                }
+
+            return null;
+        }
+
+        public void FetchVariations(ref BrickInfo brick, CQ dom)
+        {
+            List<BrickVariation> vars = new List<BrickVariation>();
+
+            foreach (var row in dom["div#colors table tbody tr"])
+            {
+                CQ[] td = (from tde in row.Cq().Find("td") select tde.Cq()).ToArray();
+
+                if (td.Length > 0)
+                    foreach (int id in from Match ma in Regex.Matches(td[4].Html(), @"[0-9]+")
+                                       select int.Parse(ma.ToString()))
+                    {
+                        var img_url = td[0].Find("a[href]").Attr("href");
+                        BrickVariation var = new BrickVariation
+                        {
+                            PartID = id,
+                            ProductionDate = brick.ProductionDate.Clone() as int[],
+                        };
+                        var clr_str = td[1].Text();
+                        
+                        if (clr_str.match(@"(lego\b)?(?<name>.*)\([0-9_\-\s\\\/]+\)", out Match m))
+                            clr_str = m.Groups["name"].ToString().Trim();
+
+                        int cndx = clr_str.ToLower().IndexOf(brick.Name.ToLower());
+
+                        if (cndx >= 0)
+                            clr_str = clr_str.Remove(cndx);
+
+                        ColorInfo clr = Brickset.FindColor(clr_str.Trim());
+
+                        var.ColorID = clr?.ID ?? -1;
+
+                        Brickset.DownloadImage(img_url, var.PartID);
+
+                        vars.Add(var);
+                    }
+            }
+
+            brick.Variations = vars.ToArray();
+        }
+        
         public void UpdatePrice(int ID, bool force = false)
         {
 #if USE_OLD_BRICKOWL_IMPL
@@ -839,15 +1056,13 @@ partsListFormat=Images;
                     if ((var != null) && (var.PartID != ID))
                         UpdatePrice(var.PartID);
 #else
-            int desg_id = LEGODatabaseProvider.IsPartID(ID) ? Brickset.GetDesignID(ID) : ID;
-            int part_id = Brickset[ID]?.Variations?.FirstOrDefault()?.PartID ?? ID;
+            (int desg_id, int part_id) = FetchID(ID);
 
             if (!force && prices.ContainsKey(part_id))
             {
                 var prc = prices[part_id];
                 long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
-
-
+                
                 if (!float.IsNaN(prc.Min) && !float.IsNaN(prc.Avg) && !float.IsNaN(prc.Max) && (prc.Date >= now))
                     return;
             }
@@ -855,11 +1070,8 @@ partsListFormat=Images;
             try
             {
                 Print($"Fetching price for {desg_id}/{part_id}...");
-
-                CQ dom = Manager.WebClient.DownloadString(string.Format(URL_SEARCH, part_id));
-                string piece_url = dom["ul.category-grid a.category-item-image[href]"].Attr("href");
-
-                CQ piece = Manager.WebClient.DownloadString("http://www.brickowl.com" + piece_url);
+                
+                (CQ piece, int _, int _) = SearchFor(part_id);
 
                 string lo = piece["span[itemprop=lowPrice] span.price"].Html();
                 string hi = piece["span[itemprop=highPrice] span.price"].Html();
@@ -935,7 +1147,7 @@ partsListFormat=Images;
             
             prices = (from kvp in bs.bricks
                       let brick = kvp.Value
-                      from @var in brick.Variations ?? new BrickVariation[0]
+                      from @var in brick?.Variations ?? new BrickVariation[0]
                       where var != null
                       select (id: var.PartID, min: var.PriceMin, avg: var.PriceAvg, max: var.PriceMax, dat: brick.FetchDate))
                      .ToDictionary(v => v.id, v => (v.min, v.max, v.avg, v.dat));
@@ -947,7 +1159,7 @@ partsListFormat=Images;
 
         public void Save()
         {
-            foreach (int id in prices.Keys)
+            foreach (int id in prices.Keys.ToArray())
                 Save(id);
         }
 
@@ -955,15 +1167,18 @@ partsListFormat=Images;
         {
             BrickInfo brick = Brickset[ID];
 
-            foreach (BrickVariation var in brick?.Variations ?? new BrickVariation[0])
-                if (var != null)
-                {
-                    var.PriceMin = prices[ID].Min;
-                    var.PriceAvg = prices[ID].Avg;
-                    var.PriceMax = prices[ID].Max;
-                }
+            if (brick != null)
+            {
+                foreach (BrickVariation var in brick.Variations ?? new BrickVariation[0])
+                    if (var != null)
+                    {
+                        var.PriceMin = prices[ID].Min;
+                        var.PriceAvg = prices[ID].Avg;
+                        var.PriceMax = prices[ID].Max;
+                    }
 
-            brick.FetchDate = prices[ID].Date;
+                brick.FetchDate = prices[ID].Date;
+            }
         }
 
         public void ClearAll()
@@ -981,8 +1196,14 @@ partsListFormat=Images;
 
             IsDisposed = true;
         }
-    }
 
+        public BrickowlDotCom(string dir, LEGODatabaseManager manager)
+        {
+            Manager = manager;
+
+            Load();
+        }
+    }
 
     [Serializable, XmlType(AnonymousType = true), XmlRoot(Namespace = "", IsNullable = false)]
     public sealed partial class BrickDB
