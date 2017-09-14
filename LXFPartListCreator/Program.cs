@@ -1,6 +1,6 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.Drawing.Imaging;
@@ -17,9 +17,6 @@ using System;
 
 using Newtonsoft.Json;
 
-using NSass;
-
-using XApplication = Microsoft.Office.Interop.Excel.Application;
 using Rectangle = System.Drawing.Rectangle;
 
 namespace LXF
@@ -27,9 +24,6 @@ namespace LXF
     using static ConsoleColor;
     using static Console;
     using static Math;
-
-    using Properties;
-
 
     public static unsafe class Program
     {
@@ -65,12 +59,15 @@ ________________________________________________________________________________
 _____________________________________________________________________________________________________________
 
 Usage:
-    --in=...                Input .LXF file
+    --in=...                Input .LXF or .RAW file
+    --raw                   Indicates that the input is a .RAW data file
     --out=...               Output document file
     --type=...              Output document type/format. Only the following values are supported:
            HTML   [default]
            JSON
            XML
+           RAW              A pre-generated part list in a raw data format, which can be converted to other
+                            formats
            EXCEL
     --x-type=...            The excel output format (only used with '--type=EXCEL')            
              XLS            Excel 95-2003 format
@@ -106,9 +103,6 @@ ________________________________________________________________________________
                 using (LEGODatabaseManager db = new LEGODatabaseManager(cache))
                     try
                     {
-                        string thumbnail;
-                        LXFML lxfml;
-
                         db.AddProvider<BricksetDotCom>().BitmapPostprocessor = ImageCleanup.RemoveEdges;
                         db.AddProvider<BrickowlDotCom>();
                         // TODO : add other services/backup sites [?]
@@ -126,59 +120,68 @@ ________________________________________________________________________________
                         if (hasopt("delete-image-cache", out _))
                             db.ClearImages();
 
-                        using (ZipArchive lxf = ZipFile.Open(@in, ZipArchiveMode.Read))
-                        using (Stream lxfms = lxf.GetEntry(PATH_LXFML).Open())
-                        using (Stream pngms = lxf.GetEntry(PATH_PNG).Open())
-                        using (Bitmap png = Image.FromStream(pngms) as Bitmap)
-                        using (MemoryStream ms = new MemoryStream())
-                        {
-                            XmlSerializer xmlser = new XmlSerializer(typeof(LXFML));
-
-                            lxfml = xmlser.Deserialize(lxfms) as LXFML;
-
-                            png.Save(ms, ImageFormat.Png);
-
-                            thumbnail = $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
-                        }
-
                         Dictionary<string, Type> gendic = new Dictionary<string, Type>
                         {
+                            ["raw"] = typeof(RawDocument),
                             ["xml"] = typeof(XMLDocument),
                             ["html"] = typeof(HTMLDocument),
                             ["json"] = typeof(JSONDocument),
-                            ["excel"] = typeof(EXCELDocument),
+                            ["excel"] = typeof(ExcelDocument),
                         };
 
                         if (!hasopt("type", out string doctype) && !gendic.ContainsKey(doctype.ToLower()))
                             doctype = "html";
-
-                        DocumentGenerator gen = Activator.CreateInstance(gendic[doctype.ToLower()]) as DocumentGenerator;
-
-                        gen.Thumbnail = thumbnail;
-                        gen.Options = opt;
-                        gen.Database = db;
-
-                        if (!hasopt("out", out string @out))
+                        else
+                            doctype = doctype.ToLower();
+                        
+                        using (DocumentGenerator gen = Activator.CreateInstance(gendic[doctype]) as DocumentGenerator)
                         {
                             FileInfo ifile = new FileInfo(@in);
+                            FileInfo ofile;
+                            string doc;
 
-                            @out = $"{ifile.Directory.FullName}/{ifile.Name.Replace(ifile.Extension, "")}{gen.Extension}";
+                            if (!hasopt("out", out string @out))
+                                @out = $"{ifile.Directory.FullName}/{ifile.Name.Replace(ifile.Extension, "")}{gen.Extension}";
+
+                            ofile = new FileInfo(@out);
+
+                            gen.Options = opt;
+
+                            if (hasopt("raw", out _))
+                                using (FileStream fs = ifile.OpenRead())
+                                using (StreamReader rd = new StreamReader(fs))
+                                    doc = Generate(gen, rd.ReadToEnd().Unzip().Unzip());
+                            else
+                                using (ZipArchive lxf = ZipFile.Open(@in, ZipArchiveMode.Read))
+                                using (Stream lxfms = lxf.GetEntry(PATH_LXFML).Open())
+                                using (Stream pngms = lxf.GetEntry(PATH_PNG).Open())
+                                using (Bitmap png = Image.FromStream(pngms) as Bitmap)
+                                using (MemoryStream ms = new MemoryStream())
+                                {
+                                    XmlSerializer xmlser = new XmlSerializer(typeof(LXFML));
+                                    LXFML lxfml = xmlser.Deserialize(lxfms) as LXFML;
+
+                                    png.Save(ms, ImageFormat.Png);
+
+                                    gen.Model = lxfml;
+                                    gen.Thumbnail = $"data:image/png;base64,{Convert.ToBase64String(ms.ToArray())}";
+
+                                    doc = Generate(gen, lxfml, db);
+                                }
+
+                            if (ofile.Exists)
+                                ofile.Delete();
+
+                            if (gendic[doctype] == typeof(ExcelDocument))
+                                File.Move(doc, ofile.FullName);
+                            else
+                                using (FileStream fs = ofile.OpenWrite())
+                                using (StreamWriter wr = new StreamWriter(fs, Encoding.UTF8))
+                                    wr.Write(doc);
+
+                            if (hasopt("open-after-success", out _))
+                                Process.Start(ofile.FullName);
                         }
-
-                        FileInfo nfo = new FileInfo(@out);
-                        string doc;
-
-                        doc = Generate(gen, lxfml);
-
-                        if (nfo.Exists)
-                            nfo.Delete();
-
-                        using (FileStream fs = nfo.OpenWrite())
-                        using (StreamWriter wr = new StreamWriter(fs, Encoding.UTF8))
-                            wr.Write(doc);
-
-                        if (hasopt("open-after-success", out _))
-                            Process.Start(nfo.FullName);
                     }
                     catch (Exception ex)
                     {
@@ -199,14 +202,8 @@ ________________________________________________________________________________
                     ;
             }
         }
-
-        private static string Generate<T>(LXFML lxfml)
-            where T : DocumentGenerator, new() => Generate(new T(), lxfml);
-
-        private static string Generate(Type gentype, LXFML lxfml) =>
-            Generate(Activator.CreateInstance(gentype) as DocumentGenerator, lxfml);
-
-        private static string Generate(DocumentGenerator gen, LXFML lxfml)
+        
+        private static string Generate(DocumentGenerator gen, LXFML lxfml, LEGODatabaseManager database)
         {
             #region INIT
             
@@ -234,8 +231,7 @@ ________________________________________________________________________________
             int partno = 0;
             int partcnt = lxfml.Bricks.Brick.Length;
             int listcnt = partlist.Length;
-
-            gen.Partlist = partlist;
+            
             gen.Print = Print;
 
             #endregion
@@ -246,7 +242,7 @@ ________________________________________________________________________________
             {
                 #region INIT
 
-                BrickInfo part = gen.Database[parts.ID];
+                BrickInfo part = database[parts.ID];
                 BrickVariation bvar1 = part?.Variations?.FirstOrDefault(v => parts.Matr.Contains((short)v.ColorID) || v.PartID == parts.ID);
                 BrickVariation bvar2 = bvar1 ?? part?.Variations?.FirstOrDefault();
 
@@ -258,9 +254,9 @@ ________________________________________________________________________________
                 #endregion
                 #region COLORIZER + IMAGE
 
-                ColorInfo color = gen.Database.GetColor(bvar1?.ColorID ?? parts.Matr.FirstOrDefault()) ?? gen.Database.GetColor(bvar2?.ColorID ?? 0);
+                ColorInfo color = database.GetColor(bvar1?.ColorID ?? parts.Matr.FirstOrDefault()) ?? database.GetColor(bvar2?.ColorID ?? 0);
                 string rgbclr = color?.RGB ?? "transparent";
-                string png = gen.Database.GetImageByPartID(bvar2?.PartID ?? parts.ID, src =>
+                string png = database.GetImageByPartID(bvar2?.PartID ?? parts.ID, src =>
                 {
                     int w = src.Width;
                     int h = src.Height;
@@ -302,6 +298,7 @@ ________________________________________________________________________________
                     Part = part,
                     BrickVariation1 = bvar1,
                     BrickVariation2 = bvar2,
+                    IterationCount = partno,
                 });
 
                 #region PRICE + DEBUG
@@ -334,6 +331,29 @@ ________________________________________________________________________________
             return gen.GenerateDocument(sb, total, brickcount);
         }
         
+        private static string Generate(DocumentGenerator gen, string rawjson)
+        {
+            RawDocument.RawData raw = JsonConvert.DeserializeObject<RawDocument.RawData>(rawjson);
+            StringBuilder sb = new StringBuilder();
+
+            gen.Model = raw.Model;
+            gen.Thumbnail = raw.Thumbnail;
+            gen.Print = (Action<string>)Serializer.Deserialize(Convert.FromBase64String(raw.PrintFunc));
+
+            foreach ((string k, string v) in raw.Options)
+                if (!gen.Options.ContainsKey(k))
+                    gen.Options[k] = v;
+
+            gen.BeforeIteration(ref sb);
+            
+            foreach (DocumentGenerator.IterationData dat in raw.Parts)
+                gen.Iteration(ref sb, dat);
+
+            gen.AfterIteration(ref sb, raw.PartCount);
+
+            return gen.GenerateDocument(sb, raw.TotalPrice, raw.BrickCount);
+        }
+
         private static Dictionary<string, string> GetOptions(string[] argv)
         {
             Dictionary<string, string> dic = new Dictionary<string, string> {
@@ -400,7 +420,30 @@ ________________________________________________________________________________
 
             sb.ToString().Err();
         }
+        
+        internal static string Zip(this string str)
+        {
+            using (MemoryStream msi = new MemoryStream(Encoding.Default.GetBytes(str)))
+            using (MemoryStream mso = new MemoryStream())
+            {
+                using (GZipStream gz = new GZipStream(mso, CompressionMode.Compress))
+                    msi.CopyTo(gz);
 
+                return Encoding.Default.GetString(mso.ToArray());
+            }
+        }
+
+        internal static string Unzip(this string str)
+        {
+            using (MemoryStream msi = new MemoryStream(Encoding.Default.GetBytes(str)))
+            using (MemoryStream mso = new MemoryStream())
+            {
+                using (GZipStream gz = new GZipStream(msi, CompressionMode.Decompress))
+                    gz.CopyTo(mso);
+
+                return Encoding.Default.GetString(mso.ToArray());
+            }
+        }
 
         private struct LXFMLBrickGrouping
         {
@@ -433,338 +476,126 @@ ________________________________________________________________________________
         }
     }
 
-    internal abstract class DocumentGenerator
+    public static class Serializer
     {
-        public LXFML Model { set; get; }
-        public string Thumbnail { set; get; }
-        public Action<string> Print { set; get; }
-        public LEGODatabaseManager Database { set; get; }
-        public Dictionary<string, string> Options { set; get; }
-        public (int Count, int ID, short[] Matr, short[] Decor, IEnumerable<LXFMLBricksBrick> Bricks)[] Partlist { set; get; }
-
-        public abstract string Extension { get; }
-
-        public abstract void BeforeIteration(ref StringBuilder sb);
-        public abstract void Iteration(ref StringBuilder sb, IterationData data);
-        public abstract void AfterIteration(ref StringBuilder sb, int partcnt);
-        public abstract string GenerateDocument(StringBuilder sb, Price total, int brickcount);
-
-        protected bool HasOption(string name, out string value)
+        public static byte[] Serialize(Delegate del)
         {
-            (value, name) = (null, name.ToLower());
-
-            if (Options?.ContainsKey(name) ?? false)
-                value = Options[name];
-
-            return value != null;
-        }
-
-        internal struct IterationData
-        {
-            public (int Count, int ID, short[] Matr, short[] Decor, IEnumerable<LXFMLBricksBrick> Bricks) parts { set; get; }
-
-            public string PNG { set; get; }
-            public Price PartsPrice { set; get; }
-            public Price BrickPrice { set; get; }
-            public ColorInfo Color { set; get; }
-            public BrickInfo Part { set; get; }
-            public BrickVariation BrickVariation1 { set; get; }
-            public BrickVariation BrickVariation2 { set; get; }
-
-            public int Count => parts.Count;
-            public int DesignID => parts.ID;
-            public int? PartID => (BrickVariation1 ?? BrickVariation2)?.PartID;
-        }
-    }
-
-    internal unsafe sealed class HTMLDocument
-        : DocumentGenerator
-    {
-        public override string Extension => ".html";
-
-        public override void BeforeIteration(ref StringBuilder sb)
-        {
-        }
-
-        public override string GenerateDocument(StringBuilder sb, Price total, int brickcount)
-        {
-            string css;
-
-            using (MemoryStream ms = new MemoryStream(Resources.style))
-            using (StreamReader sr = new StreamReader(ms, Encoding.UTF8))
-                css = new SassCompiler().Compile(sr.ReadToEnd(), OutputStyle.Compressed, true);
-
-            return Resources.template.DFormat(new Dictionary<string, object>
-            {
-                ["style"] = css,
-                ["model_price_min"] = $"{total.Min:F2}€",
-                ["model_price_avg"] = $"{total.Avg:F2}€",
-                ["model_price_max"] = $"{total.Max:F2}€",
-                ["price_per_brick_min"] = $"{total.Min / brickcount:F3}€",
-                ["price_per_brick_avg"] = $"{total.Avg / brickcount:F3}€",
-                ["price_per_brick_max"] = $"{total.Max / brickcount:F3}€",
-                ["timestamp"] = DateTime.Now.ToString("dd. MMM yyyy - HH:mm:ss.ffffff"),
-                ["model_path"] = Options["in"],
-                ["model_name"] = Model?.name,
-                ["model_version"] = $"{Model?.versionMajor ?? 0}.{Model?.versionMinor ?? 0}",
-                ["tool_version"] = Model?.Meta?.ToString(),
-                ["thumbnail"] = Thumbnail,
-                ["bricks"] = sb.ToString(),
-                ["bricklist_count"] = Partlist.Length,
-                ["brick_count"] = brickcount,
-            });
-        }
-
-        public override void AfterIteration(ref StringBuilder sb, int missing)
-        {
-            if (missing > 0)
-                sb.Append($@"
-<li>
-    <table border=""0"" width=""100%"">
-        <tr width=""100%"">
-            <td class=""td1"">
-                <div class=""img"" count=""{missing}""/>
-            </td>
-            <td>
-                <h2>??????????????</h2>
-                <span class=""mono"">
-                    ID: p.???????/d.?????
-                </span>
-            </td>
-            <td valign=""bottom"" align=""right"" class=""mono td3"">
-                {missing} x ???€ = ???€<br/>
-                {missing} x ???€ = ???€<br/>
-                {missing} x ???€ = ???€<br/>
-            </td>
-        </tr>
-    </table>
-</li>");
-        }
-
-        public override void Iteration(ref StringBuilder sb, IterationData data)
-        {
-            sb.Append($@"
-<li>
-    <table border=""0"" width=""100%"">
-        <tr width=""100%"">
-            <td class=""td1"">
-                <div class=""img"" count=""{data.Count}"" style=""background-image: url('{data.PNG}'); filter: drop-shadow(0px 0px 6px {data.Color?.RGB ?? "transparent"});""/>
-            </td>
-            <td>
-                <h2>{data.Part?.Name ?? $"&lt;{data.DesignID}&gt;"} &nbsp; - &nbsp; {data.Color?.Name}</h2>
-                <span class=""mono"">
-                    ID: p.{data.BrickVariation2?.PartID}/d.{data.Part?.DesignID}
-                </span>
-            </td>
-            <td valign=""bottom"" align=""right"" class=""mono td3"">
-                <a target=""_blank"" href=""{string.Format(data.BrickVariation1 is null ? BricksetDotCom.URL_DESIGN : BricksetDotCom.URL_PART, data.BrickVariation1?.PartID ?? data.DesignID)}"">   	
-                    &#8631; brickset.com<br/>
-                </a>
-                {data.parts.Count} x {data.BrickPrice.Min:F2}€ = {data.PartsPrice.Min:F2}€<br/>
-                {data.parts.Count} x {data.BrickPrice.Avg:F2}€ = {data.PartsPrice.Avg:F2}€<br/>
-                {data.parts.Count} x {data.BrickPrice.Max:F2}€ = {data.PartsPrice.Max:F2}€</td>
-        </tr>
-    </table>
-</li>");
-        }
-    }
-
-    internal unsafe sealed class JSONDocument
-        : DocumentGenerator
-    {
-        private List<dynamic> cont = new List<dynamic>();
-        private int missing;
-
-
-        public override string Extension => ".json";
-
-        public override void BeforeIteration(ref StringBuilder sb)
-        {
-        }
-
-        public override void Iteration(ref StringBuilder sb, IterationData data) => cont.Add(new
-        {
-            DesignID = data.Part.DesignID,
-            PartID = data.PartID,
-            Material = data.parts.Matr,
-            DEcoration = data.parts.Decor,
-            UnitPrice = data.PartsPrice,
-            Count = data.parts.Count,
-            Thumbnail = data.PNG,
-            Color = data.Color,
-            Price = data.BrickPrice
-        });
-
-        public override void AfterIteration(ref StringBuilder sb, int missing) => this.missing = missing;
-
-        public override string GenerateDocument(StringBuilder sb, Price total, int brickcount)
-        {
-            var data = new
-            {
-                Meta = new
-                {
-                    Path = Options["in"],
-                    Name = Model?.name,
-                    Version = $"{Model?.versionMajor ?? 0}.{Model?.versionMinor ?? 0}",
-                    ToolVersion = Model?.Meta?.ToString(),
-                    Timestamp = DateTime.Now.ToString("dd. MMM yyyy - HH:mm:ss.ffffff"),
-                    Thumbnail = Thumbnail,
-                },
-                TotalPrice = total,
-                PricePerBrick = new Price(total.Min / brickcount, total.Avg / brickcount, total.Max / brickcount),
-                Partlist = cont.ToArray(),
-                PartlistCount = Partlist.Length,
-                BrickCount = brickcount,
-            };
-
-            return JsonConvert.SerializeObject(data, Formatting.Indented);
-        }
-    }
-
-    internal unsafe sealed class XMLDocument
-        : DocumentGenerator
-    {
-        JSONDocument doc = new JSONDocument();
-
-
-        public override string Extension => ".xml";
-
-        public override void AfterIteration(ref StringBuilder sb, int partcnt) => doc.AfterIteration(ref sb, partcnt);
-
-        public override void BeforeIteration(ref StringBuilder sb) => doc.BeforeIteration(ref sb);
-
-        public override string GenerateDocument(StringBuilder sb, Price total, int brickcount)
-        {
-            string json = doc.GenerateDocument(sb, total, brickcount);
-            object obj = JsonConvert.DeserializeObject(json);
-            XmlSerializer ser = new XmlSerializer(obj.GetType());
+            BinaryFormatter bfm = new BinaryFormatter();
 
             using (MemoryStream ms = new MemoryStream())
-            using (StreamReader sr = new StreamReader(ms))
             {
-                ser.Serialize(ms, obj);
-                ms.Seek(0, SeekOrigin.Begin);
+                bfm.Serialize(ms, new SerializeDelegate(del));
 
-                return sr.ReadToEnd();
+                return ms.ToArray();
             }
         }
 
-        public override void Iteration(ref StringBuilder sb, IterationData data) => doc.Iteration(ref sb, data);
+        public static Delegate Deserialize(byte[] arr)
+        {
+            BinaryFormatter bfm = new BinaryFormatter();
+
+            using (MemoryStream ms = new MemoryStream(arr))
+            {
+                object value = bfm.Deserialize(ms);
+
+                if (value is SerializeDelegate del)
+                    return del.Delegate;
+                else
+                    throw new InvalidOperationException();
+            }
+        }
     }
 
-    internal unsafe sealed class EXCELDocument
-        : DocumentGenerator
+    [Serializable]
+    public class SerializeDelegate
+        : ISerializable
     {
-        private static readonly Missing missing = Missing.Value;
-        private XApplication xapp;
-        private Worksheet xsheet;
-        private Workbook xbook;
-        int partcount;
-        int row;
+        internal const string S_DELTYPE = "delegateType";
+        internal const string S_CLSTYPE = "classType";
+        internal const string S_ISSER = "isSerializable";
+        internal const string S_DEL = "delegate";
+        internal const string S_METH = "method";
+        internal const string S_CLS = "class";
+
+        public Delegate Delegate { get; }
 
 
-        public override string Extension => HasOption("x-type", out string ext) ? ext.ToLower() : ".xls";
+        internal SerializeDelegate(Delegate func) => Delegate = func;
 
-
-        ~EXCELDocument()
+        internal SerializeDelegate(SerializationInfo info, StreamingContext context)
         {
-            Marshal.ReleaseComObject(xsheet);
-            Marshal.ReleaseComObject(xbook);
-            Marshal.ReleaseComObject(xapp);
-        }
+            Type tp = info.GetValue(S_DELTYPE, typeof(Type)) as Type;
 
-        public EXCELDocument()
-        {
-            if ((xapp = new XApplication()) == null)
-                throw new Exception("Microsoft Office Excel Tools 16.0 or higher has not been installed properly.");
+            if (info.GetBoolean(S_ISSER))
+                Delegate = info.GetValue(S_DEL, tp) as Delegate;
             else
             {
-                xbook = xapp.Workbooks.Add(missing);
-                xsheet = xbook.Worksheets.Item[1] as Worksheet;
+                MethodInfo method = info.GetValue(S_METH, typeof(MethodInfo)) as MethodInfo;
+                AnonymousClassWrapper w = info.GetValue(S_CLS, typeof(AnonymousClassWrapper)) as AnonymousClassWrapper;
+
+                Delegate = Delegate.CreateDelegate(tp, w.Value, method);
             }
         }
 
-        public override void AfterIteration(ref StringBuilder sb, int partcnt) => partcount = partcnt;
-
-        public override void BeforeIteration(ref StringBuilder sb)
+        void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
         {
-            row = 3;
+            info.AddValue(S_DELTYPE, Delegate.GetType());
 
-            xsheet.Cells[row, 1] = "Count";
-            xsheet.Cells[row, 2] = "Part ID";
-            xsheet.Cells[row, 3] = "Design ID";
-            xsheet.Cells[row, 4] = "Name";
-            xsheet.Cells[row, 5] = "Color name";
-            xsheet.Cells[row, 6] = "Color #RGB";
-            xsheet.Cells[row, 7] = "Unit price (min)";
-            xsheet.Cells[row, 8] = "Unit price (avg)";
-            xsheet.Cells[row, 9] = "Unit price (max)";
-            xsheet.Cells[row, 10] = "Price (min)";
-            xsheet.Cells[row, 11] = "Price (avg)";
-            xsheet.Cells[row, 12] = "Price (max)";
+            if ((Delegate.Target is null || Delegate.Method.DeclaringType.GetCustomAttributes(typeof(SerializableAttribute), false).Length > 0) && Delegate != null)
+            {
+                info.AddValue(S_ISSER, true);
+                info.AddValue(S_DEL, Delegate);
+            }
+            else
+            {
+                info.AddValue(S_ISSER, false);
+                info.AddValue(S_METH, Delegate.Method);
+                info.AddValue(S_CLS, new AnonymousClassWrapper(Delegate.Method.DeclaringType, Delegate.Target));
+            }
         }
 
-        public override string GenerateDocument(StringBuilder sb, Price total, int brickcount)
+        [Serializable]
+        internal class AnonymousClassWrapper
+            : ISerializable
         {
-            row += 2;
+            public object Value { get; }
+            public Type Type { get; }
 
-            xsheet.Cells[row, 1] = "1";
-            xsheet.Cells[row, 4] = Model?.name ?? "";
-            xsheet.Cells[row, 10] = $"{total.Min:N2}€";
-            xsheet.Cells[row, 11] = $"{total.Avg:N2}€";
-            xsheet.Cells[row, 12] = $"{total.Max:N2}€";
-            
-            if (!HasOption("x-type", out string type))
-                type = nameof(ExcelType.XLS);
 
-            FileInfo tmp = new FileInfo($"{Directory.GetCurrentDirectory()}/{Guid.NewGuid():D}.{type.ToLower()}");
+            internal AnonymousClassWrapper(Type bclass, object bobject) => (Type, Value) = (bclass, bobject);
 
-            xsheet.SaveAs(
-                tmp.FullName,
-                Enum.Parse(typeof(ExcelType), type, true),
-                missing,
-                missing,
-                missing,
-                missing,
-                XlSaveAsAccessMode.xlExclusive,
-                missing,
-                missing,
-                missing
-            );
-            xbook.Close(true, missing, missing);
-            xapp.Quit();
+            internal AnonymousClassWrapper(SerializationInfo info, StreamingContext context)
+            {
+                Type c_tp = info.GetValue(S_CLSTYPE, typeof(Type)) as Type;
 
-            string cont;
+                Value = Activator.CreateInstance(c_tp);
 
-            using (FileStream fs = tmp.OpenRead())
-            using (StreamReader rd = new StreamReader(fs))
-                cont = rd.ReadToEnd();
+                foreach (FieldInfo nfo in c_tp.GetFields())
+                    if (typeof(Delegate).IsAssignableFrom(nfo.FieldType))
+                        nfo.SetValue(Value, ((SerializeDelegate)info.GetValue(nfo.Name, typeof(SerializeDelegate))).Delegate);
+                    else if (!nfo.FieldType.IsSerializable)
+                        nfo.SetValue(Value, ((AnonymousClassWrapper)info.GetValue(nfo.Name, typeof(AnonymousClassWrapper))).Value);
+                    else
+                        nfo.SetValue(Value, info.GetValue(nfo.Name, nfo.FieldType));
+            }
 
-            tmp.Delete();
+            void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue(S_CLSTYPE, Type);
 
-            return cont;
-        }
-
-        public override void Iteration(ref StringBuilder sb, IterationData data)
-        {
-            ++row;
-
-            xsheet.Cells[row, 1] = data.parts.Count.ToString();
-            xsheet.Cells[row, 2] = data.PartID.ToString();
-            xsheet.Cells[row, 3] = data.DesignID.ToString();
-            xsheet.Cells[row, 4] = data.Part?.Name;
-            xsheet.Cells[row, 5] = data.Color?.Name;
-            xsheet.Cells[row, 6] = data.Color?.RGB;
-            xsheet.Cells[row, 7] = $"{data.BrickPrice.Min:N2}€";
-            xsheet.Cells[row, 8] = $"{data.BrickPrice.Avg:N2}€";
-            xsheet.Cells[row, 9] = $"{data.BrickPrice.Max:N2}€";
-            xsheet.Cells[row, 10] = $"{data.PartsPrice.Min:N2}€";
-            xsheet.Cells[row, 11] = $"{data.PartsPrice.Avg:N2}€";
-            xsheet.Cells[row, 12] = $"{data.PartsPrice.Max:N2}€";
+                foreach (FieldInfo field in Type.GetFields())
+                    if (typeof(Delegate).IsAssignableFrom(field.FieldType))
+                        info.AddValue(field.Name, new SerializeDelegate((Delegate)field.GetValue(Value)));
+                    else if (!field.FieldType.IsSerializable)
+                        info.AddValue(field.Name, new AnonymousClassWrapper(field.FieldType, field.GetValue(Value)));
+                    else
+                        info.AddValue(field.Name, field.GetValue(Value));
+            }
         }
     }
 
-    internal struct Price
+    [Serializable]
+    public struct Price
     {
         public float Min { set; get; }
         public float Avg { set; get; }
@@ -772,14 +603,5 @@ ________________________________________________________________________________
 
         public Price(float min, float avg, float max) =>
             (Min, Avg, Max) = (min, avg, max);
-    }
-
-    internal enum ExcelType
-        : int
-    {
-        CSV = XlFileFormat.xlCSV,
-        HTML = XlFileFormat.xlHtml,
-        XLS = XlFileFormat.xlExcel8,
-        XLSX = XlFileFormat.xlOpenXMLWorkbook,
     }
 }

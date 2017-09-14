@@ -172,9 +172,7 @@ namespace LXF
     {
         private WebClient wc = new WebClient();
 
-
-        internal WebClient WebClient => wc;
-
+        
         internal void ResetWebClient()
         {
             wc.Dispose();
@@ -314,6 +312,59 @@ partsListFormat=Images;
             where T : class => EachF<LEGODatabaseProvider, T>(f);
 
         private void Each(Action<LEGODatabaseProvider> f) => Each<LEGODatabaseProvider>(f);
+
+        internal T TryWebAction<T>(Func<T> f, Action reset = null, int count = 3, int timeout = 9000)
+        {
+            WebException last = null;
+            int @try = 0;
+
+            while (@try < count)
+                try
+                {
+                    if (@try == count - 1)
+                    {
+                        ResetWebClient();
+                        reset();
+                    }
+
+                    return f();
+                }
+                catch (WebException ex)
+                {
+                    int code = (int?)(ex.Response as HttpWebResponse)?.StatusCode ?? 200;
+
+                    if ((code == 400) ||
+                        (code == 401) ||
+                        (code == 429) ||
+                        (code >= 500))
+                    {
+                        Print($"   attempt no.{++@try}");
+                        Thread.Sleep(timeout / count);
+
+                        last = ex;
+                    }
+                    else
+                        throw;
+                }
+
+            Thread.Sleep(30000); // "cool down" web polls ... I should prob. do smth. better than 'thread::sleep' -__-
+
+            ResetWebClient();
+
+            return last is null ? default(T) : throw last;
+        }
+
+        internal void DownloadFile(string url, string path, Action reset = null) => TryWebAction(() =>
+        {
+            if (url.StartsWith("//"))
+                url = "http:" + url;
+
+            wc.DownloadFile(url, path);
+
+            return null as object;
+        }, reset: reset);
+
+        internal string DownloadString(string url, Action reset = null) => TryWebAction(() => wc.DownloadString(url), reset: reset);
 
         public ILEGODatabase AddProvider(ILEGODatabase provider) => Exec(() =>
         {
@@ -462,11 +513,11 @@ partsListFormat=Images;
                                                                                                (comp[0].Levenshtein < input.Length / 3)
                            let dist = Math.Sqrt(Math.Pow(comp.Sum(c => c.Hamming), 2) + Math.Pow(comp.Sum(c => c.Levenshtein), 2))
                            orderby dist ascending
-                           // orderby ham ascending
                            select new
                            {
                                // Hamming = ham,
                                // Levenshtein = lev,
+                               Distance = dist,
                                Color = c
                            }).FirstOrDefault()?.Color;
         });
@@ -697,7 +748,7 @@ partsListFormat=Images;
 
             if (!path.Exists)
             {
-                DownloadFile(uri.Replace("/1/", "/2/"), path.FullName);
+                Manager.DownloadFile(uri.Replace("/1/", "/2/"), path.FullName);
 
                 string tmp = $"{path.FullName}/../{Guid.NewGuid():D}.tmp";
 
@@ -724,7 +775,12 @@ partsListFormat=Images;
 
                 ser.Serialize(fs, new BrickDB
                 {
-                    Bricks = bricks.Values.OrderBy(b => b?.DesignID).ToArray(),
+                    Bricks = (from b in bricks.Values
+                              where b != null
+                              where b.DesignID > 0
+                              where (b.Variations?.Length ?? -1) > 0
+                              orderby b.DesignID ascending
+                              select b).ToArray(),
                     Colors = colors.Values.OrderBy(c => c?.ID).ToArray(),
                 });
             }
@@ -802,59 +858,7 @@ partsListFormat=Images;
             }
         }
         
-        private T TryWebAction<T>(Func<T> f, int count = 3, int timeout = 9000)
-        {
-            WebException last = null;
-            int @try = 0;
-
-            while (@try < count)
-                try
-                {
-                    if (@try == count - 1)
-                        Manager.ResetWebClient();
-
-                    return f();
-                }
-                catch (WebException ex)
-                {
-                    int code = (int?)(ex.Response as HttpWebResponse)?.StatusCode ?? 200;
-
-                    if ((code == 400) ||
-                        (code == 401) ||
-                        (code >= 500))
-                    {
-                        Print($"   attempt no.{++@try}");
-                        Thread.Sleep(timeout / count);
-
-                        last = ex;
-                    }
-                    else
-                        throw;
-                }
-
-            Thread.Sleep(30000); // "cool down" web polls ... I should prob. do smth. better than 'thread::sleep' -__-
-
-            Manager.ResetWebClient();
-
-            return last is null ? default(T) : throw last;
-        }
-
-        private void DownloadFile(string url, string path) => TryWebAction(() =>
-        {
-            if (url.StartsWith("//"))
-                url = "http:" + url;
-
-            Manager.WebClient.DownloadFile(url, path);
-
-            return null as object;
-        });
-
-        private string DownloadString(string url, int id = -1) => TryWebAction(() =>
-        {
-            Manager.SetBricksetHeaders(id);
-
-            return Manager.WebClient.DownloadString(url);
-        });
+        private string DownloadString(string url, int id = -1) => Manager.DownloadString(url, () => Manager.SetBricksetHeaders(id));
 
         public BricksetDotCom(string dir, LEGODatabaseManager manager) : base(dir, manager) => Load();
     }
@@ -867,11 +871,12 @@ partsListFormat=Images;
         public const string URL_SEARCH = "http://www.brickowl.com/search/catalog?query={0}&cat=1";
 
         private Dictionary<int, (float Min, float Max, float Avg, long Date)> prices = new Dictionary<int, (float, float, float, long)>();
+        private (long dt, List<int> ids) tmp;
 
         public override string Name => "brickowl.com";
         public long CacheExpriration => 60 * 60 * 24 * 7; // update once a week
         public bool IsDisposed { private set; get; } = false;
-
+        
 
         public LEGODatabaseManager Manager { internal set; get; }
 
@@ -895,10 +900,10 @@ partsListFormat=Images;
 
             Print($"Searching for {ID}...");
 
-            CQ dom = Manager.WebClient.DownloadString(string.Format(URL_SEARCH, part_id > 0 ? part_id : desg_id));
+            CQ dom = Manager.DownloadString(string.Format(URL_SEARCH, part_id > 0 ? part_id : desg_id));
             string piece_url = dom["ul.category-grid a.category-item-image[href]"].Attr("href");
 
-            return (Manager.WebClient.DownloadString("http://www.brickowl.com" + piece_url), desg_id, part_id);
+            return (Manager.DownloadString("http://www.brickowl.com" + piece_url), desg_id, part_id);
         }
 
         public BrickInfo FetchBrick(int ID)
@@ -1057,20 +1062,30 @@ partsListFormat=Images;
                         UpdatePrice(var.PartID);
 #else
             (int desg_id, int part_id) = FetchID(ID);
+            long pnow = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
 
             if (!force && prices.ContainsKey(part_id))
             {
                 var prc = prices[part_id];
-                long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
                 
-                if (!float.IsNaN(prc.Min) && !float.IsNaN(prc.Avg) && !float.IsNaN(prc.Max) && (prc.Date >= now))
+                if (!float.IsNaN(prc.Min) && !float.IsNaN(prc.Avg) && !float.IsNaN(prc.Max) && (prc.Date >= pnow))
                     return;
             }
 
             try
             {
+                if (tmp.ids == null)
+                {
+                    tmp.ids = new List<int> { part_id };
+                    tmp.dt = DateTime.Now.Ticks;
+                }
+                else if (tmp.ids.Contains(part_id) && (tmp.dt > pnow) && !force)
+                    return;
+                else
+                    tmp.ids.Add(part_id);
+
                 Print($"Fetching price for {desg_id}/{part_id}...");
-                
+
                 (CQ piece, int _, int _) = SearchFor(part_id);
 
                 string lo = piece["span[itemprop=lowPrice] span.price"].Html();
@@ -1125,10 +1140,11 @@ partsListFormat=Images;
 
         public void UpdateOld()
         {
-            long now = DateTime.Now.AddSeconds(-CacheExpriration).Ticks;
-
             foreach (int id in prices.Keys.ToArray())
                 UpdatePrice(id);
+
+            tmp.ids = null;
+            tmp.dt = 0;
 
             try
             {

@@ -59,6 +59,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DocumentGenerator.cs" />
     <Compile Include="ImageCleanup.cs" />
     <Compile Include="LEGODatabase.cs" />
     <Compile Include="LXFML.cs" />
